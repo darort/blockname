@@ -1,12 +1,4 @@
 {
-    "version": "2.0",
-    "blockedNames": [
-        "123",
-        "admin",
-        "test",
-        "hi2",
-        "hello",
-        "why",
-        "wow"
-    ]
+    "blockedNames": ["123", "admin", "test", "hi1"],
+    "greenWords": ["PP", "hello", "why"]
 }
