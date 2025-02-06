@@ -1,0 +1,11 @@
+{
+    "version": "1.10",
+    "blockedNames": [
+        "123",
+        "admin",
+        "test",
+        "hi2",
+        "hello",
+        "why"
+    ]
+}
