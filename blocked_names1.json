@@ -1,11 +1,11 @@
 {
     "version": "2.0",
     "blockedNames": [
-        "TANJA", "CARMEN", "FRIEDEL", "07/09/1971", "10/10/1990", "05/09/1968",
+        "TANJA", "CARMEN", "FRIEDEL",
         "PRINZ", "GERRIT", "PRINZ", "C36KG733Z", "C36K3HV4J", "MASIMO", "CHRISTIAN",
         "KAPPES", "WEIB", "C8WZKLVW4", "NAJDUCH", "GWENAELLE", "LAO", "LENGBOU",
-        "TAN", "CHE", "HONG", "06/10/1994", "LEONG",
-        "12/10/1998", "ZHENG", "HAO", "WONG", "19/10/1994", "01011990"
+        "TAN", "CHE", "HONG", "LEONG",
+        "ZHENG", "HAO", "WONG", "01011990"
     ],
     "greenWords": [
         "WHY", "HOME"
