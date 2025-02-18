@@ -1,43 +1,18 @@
 {
     "version": "4.0",
     "blockedNames": [
-        {
-            "name": "TAN CHE HONG",
-            "note": "this name does not have a number"
-        },
-        {
-            "name": "CHEONG TWON FONG"
-        },
-        {
-            "name": "TAN HONG LEONG"
-        },
-        {
-            "name": "ZHENG HAO WONG"
-        },
-        {
-            "name": "TANJA CARMEN FRIEDEL PRINZ"
-        },
-        {
-            "name": "C36K3HV4J"
-        },
-        {
-            "name": "GERRIT PRINZ"
-        },
-        {
-            "name": "C36KG733Z"
-        },
-        {
-            "name": "MASIMO CHRISTIAN KAPPES WEIB"
-        },
-        {
-            "name": "C8WZKLVW4"
-        },
-        {
-            "name": "NAJDUCH GWENAELLE"
-        },
-        {
-            "name": "LAO LENGBOU"
-        }
+        {"name":"TAN CHE HONG","note":"this name does not have a number"},
+        {"name":"CHEONG TWON FONG"},
+        {"name":"TAN HONG LEONG"},
+        {"name":"ZHENG HAO WONG"},
+        {"name":"TANJA CARMEN FRIEDEL PRINZ"},
+        {"name":"C36K3HV4J"},
+        {"name":"GERRIT PRINZ"},
+        {"name":"C36KG733Z"},
+        {"name":"MASIMO CHRISTIAN KAPPES WEIB"},
+        {"name":"C8WZKLVW4"},
+        {"name":"NAJDUCH GWENAELLE"},
+        {"name":"LAO LENGBOU"}
     ],
     "greenWords": [
         "WHY",
