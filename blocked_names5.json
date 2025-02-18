@@ -1,7 +1,7 @@
 {
     "version": "5.0",
     "blockedNames": [
-        {"name": "TAN CHE HONG", "note": "this name does not have a number"},
+        {"name": "TAN CHE HONG", "note": "ហាមបញ្ចូល"},
         {"name": "CHEONG TWON FONG", "note": "added note for this user"},
         {"name": "TAN HONG LEONG", "note": "added note for this user"},
         {"name": "ZHENG HAO WONG", "note": "added note for this user"},
