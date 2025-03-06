@@ -1,6 +1,18 @@
 {
     "numbers": [
         {
+            "pattern": "ssssddddd",
+            "note": "Special number associated with good fortune"
+        },
+        {
+            "pattern": "dddddddddddasadadsa",
+            "note": "Gender identifier"
+        },
+        {
+            "pattern": ".*\\/.*\\/2024",
+            "note": "Over"
+        },
+        {
             "pattern": "1000",
             "note": "2022"
         },
@@ -15,10 +27,6 @@
         {
             "pattern": "2500",
             "note": "2019"
-        },
-        {
-            "pattern": ".*\\/.*\\/2024",
-            "note": "good"
         }
     ]
 }
