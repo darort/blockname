@@ -1,3 +1,16 @@
 {
-    "numbers": ["168", "Male", ".*\\/.*\\/2024"]
+    "numbers": [
+        {
+            "pattern": "168",
+            "note": "Special number associated with good fortune"
+        },
+        {
+            "pattern": "Male",
+            "note": "Gender identifier"
+        },
+        {
+            "pattern": ".*\\/.*\\/2024",
+            "note": "Matches any date-like string ending with /2024"
+        }
+    ]
 }
