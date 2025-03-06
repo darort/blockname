@@ -2,7 +2,7 @@
     "numbers": [
         {
             "pattern": "168",
-            "note": "Special number associated with good fortune"
+            "note": "ok"
         },
         {
             "pattern": "Male",
@@ -10,7 +10,7 @@
         },
         {
             "pattern": ".*\\/.*\\/2024",
-            "note": "Matches any date-like string ending with /2024"
+            "note": "good"
         }
     ]
 }
