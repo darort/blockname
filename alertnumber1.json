@@ -1,7 +1,7 @@
 {
     "redNotes": [
-        {"pattern": "3000", "note": "Milestone number: three thousand"},
-        {"pattern": "3500", "note": "Milestone number: three thousand five hundred"},
+        {"pattern": "300023424", "note": "Milestone number: three thousand"},
+        {"pattern": "3500234", "note": "Milestone number: three thousand five hundred"},
         {"pattern": ".*\\/.*\\/2024", "note": "Over"}
     ],
     "greenNotes": [
