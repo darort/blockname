@@ -1,8 +1,12 @@
 {
-    "numbers": [
-        {"pattern": "168wew", "note": "Special number associated with good fortune"},
-        {"pattern": "Malewwe", "note": "Gender identifier"},
-        {"pattern": ".*\\/.*\\/2024", "note": "Over"},
+    "redNotes": [
+        {"pattern": "3000", "note": "Milestone number: three thousand"},
+        {"pattern": "3500", "note": "Milestone number: three thousand five hundred"},
+        {"pattern": ".*\\/.*\\/2024", "note": "Over"}
+    ],
+    "greenNotes": [
+        {"pattern": "4000", "note": "Milestone number: four thousand"},
+        {"pattern": "4500", "note": "Milestone number: four thousand five hundred"},
         {"pattern": "1000", "note": "ឆ្នាំ2022"},
         {"pattern": "1500", "note": "ឆ្នាំ2021"},
         {"pattern": "2000", "note": "ឆ្នាំ2020"},
