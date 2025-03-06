@@ -5,8 +5,8 @@
         {"pattern": ".*\\/.*\\/2024", "note": "Over"}
     ],
     "greenNotes": [
-        {"pattern": "\\d{1,2}\\/01\\/2025", "note": "Over"},
-        {"pattern": "\\d{1,2}\\/02\\/2025", "note": "Over"},
+        {"pattern": ".*\\/01\\/2025", "note": "Over"},
+        {"pattern": ".*\\/02\\/2025", "note": "Over"},
         {"pattern": "1000", "note": "ឆ្នាំ2022"},
         {"pattern": "1500", "note": "ឆ្នាំ2021"},
         {"pattern": "2000", "note": "ឆ្នាំ2020"},
