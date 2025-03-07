@@ -1,6 +1,17 @@
 {
     "redNotes": [
         {"pattern": "300023424", "note": "Milestone number: three thousand"},
+        {"pattern": ".*\\/.*\\/2010", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2011", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2012", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2013", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2014", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2015", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2016", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2017", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2018", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2019", "note": "✕"},
+        {"pattern": ".*\\/.*\\/2020", "note": "✕"},
         {"pattern": ".*\\/.*\\/2020", "note": "✕"},
         {"pattern": ".*\\/.*\\/2021", "note": "✕"},
         {"pattern": ".*\\/.*\\/2022", "note": "✕"},
