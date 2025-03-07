@@ -7,7 +7,7 @@
     "greenNotes": [
         {"pattern": ".*\\/01\\/2025", "note": "✓"},
         {"pattern": ".*\\/02\\/2025", "note": "✓"},
-        {"pattern": ".*\\/03\\/2025", "note": "✓"},
+        {"pattern": ".*\\/.*\\/2025", "note": "✓"},
         {"pattern": "500", "note": "23"},
         {"pattern": "1000", "note": "22"},
         {"pattern": "1500", "note": "21"},
