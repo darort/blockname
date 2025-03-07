@@ -1,12 +1,12 @@
 {
     "redNotes": [
         {"pattern": "300023424", "note": "Milestone number: three thousand"},
-        {"pattern": "3500234", "note": "Milestone number: three thousand five hundred"},
-        {"pattern": ".*\\/.*\\/2024", "note": "Over"}
+        {"pattern": ".*\\/.*\\/2023", "note": "X"},
+        {"pattern": ".*\\/.*\\/2024", "note": "X"}
     ],
     "greenNotes": [
-        {"pattern": ".*\\/01\\/2025--", "note": "Over"},
-        {"pattern": ".*\\/02\\/2025--", "note": "Over"},
+        {"pattern": ".*\\/01\\/2025--", "note": "✓"},
+        {"pattern": ".*\\/02\\/2025--", "note": "✓"},
         {"pattern": "500", "note": "23"},
         {"pattern": "1000", "note": "22"},
         {"pattern": "1500", "note": "21"},
