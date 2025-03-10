@@ -40,6 +40,30 @@
             "VUNG TAU",
             "QUY NHON"
         ],
+        "Taiwanese": [
+            "TAIPEI",
+            "KAOHSIUNG",
+            "TAICHUNG",
+            "TAINAN",
+            "BANQIAO",
+            "HSINCHU",
+            "TAOYUAN",
+            "KEELUNG",
+            "CHIAYI",
+            "TAITUNG"
+        ],
+         "Laotian": [
+            "VIENTIANE",
+            "LUANG PRABANG",
+            "PAKSE",
+            "SAVANNAKHET",
+            "THAKHEK",
+            "PHONSAVAN",
+            "LUANG NAMTHA",
+            "MUANG XAY",
+            "PAKXE",
+            "BAN HOUEISAY"
+        ],
         "Japanese": [
             "TOKYO",
             "OSAKA",
