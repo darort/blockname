@@ -37,6 +37,78 @@
             "SARAWAK",
             "SABAH",
             "TERENGGANU"
+        ],
+        "Indonesian": [
+            "JAKARTA",
+            "SURABAYA",
+            "BANDUNG",
+            "MEDAN",
+            "SEMARANG",
+            "MAKASSAR",
+            "PALEMBANG",
+            "DENPASAR",
+            "BALIKPAPAN",
+            "YOGYAKARTA"
+        ],
+        "Burmese": [
+            "YANGON",
+            "MANDALAY",
+            "NAYPYIDAW",
+            "BAGO",
+            "TAUNGGYI",
+            "MONYWA",
+            "SITTWE",
+            "MYITKYINA",
+            "PATHEIN",
+            "Mawlamyine"
+        ],
+        "Thai": [
+            "BANGKOK",
+            "CHIANG MAI",
+            "PHUKET",
+            "PATTAYA",
+            "HAT YAI",
+            "KRABI",
+            "NONG KHAI",
+            "UDON THANI",
+            "KHON KAEN",
+            "SURAT THANI"
+        ],
+        "Nepalese": [
+            "KATHMANDU",
+            "POKHARA",
+            "LALITPUR",
+            "BHARATPUR",
+            "BIRATNAGAR",
+            "BIRGUNJ",
+            "DHARAN",
+            "NEPALGANJ",
+            "ITAHARI",
+            "HETAUDA"
+        ],
+        "Bangladeshi": [
+            "DHAKA",
+            "CHITTAGONG",
+            "KHULNA",
+            "RAJSHAHI",
+            "SYLHET",
+            "BARISAL",
+            "RANGPUR",
+            "COMILLA",
+            "NARAYANGANJ",
+            "GAZIPUR"
+        ],
+        "Pakistani": [
+            "KARACHI",
+            "LAHORE",
+            "ISLAMABAD",
+            "RAWALPINDI",
+            "FAISALABAD",
+            "MULTAN",
+            "HYDERABAD",
+            "PESHAWAR",
+            "QUETTA",
+            "GUJRANWALA"
         ]
     }
 }
