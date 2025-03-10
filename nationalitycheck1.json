@@ -1,36 +1,40 @@
 {
-    "greenNotes": [
-        { "nationality": "Chinese", "city": "HENAN" },
-        { "nationality": "Chinese", "city": "GUANGDONG" },
-        { "nationality": "Chinese", "city": "SHANGHAI" },
-        { "nationality": "Chinese", "city": "BEIJING" },
-        { "nationality": "Chinese", "city": "FUJIAN" },
-        { "nationality": "Chinese", "city": "ZHEJIANG" },
-        { "nationality": "Chinese", "city": "JIANGSU" },
-        { "nationality": "Chinese", "city": "SHANDONG" },
-        { "nationality": "Chinese", "city": "SICHUAN" },
-        { "nationality": "Chinese", "city": "HUBEI" },
-
-        { "nationality": "Japanese", "city": "TOKYO" },
-        { "nationality": "Japanese", "city": "OSAKA" },
-        { "nationality": "Japanese", "city": "KYOTO" },
-        { "nationality": "Japanese", "city": "NAGOYA" },
-        { "nationality": "Japanese", "city": "FUKUOKA" },
-        { "nationality": "Japanese", "city": "SAPPORO" },
-        { "nationality": "Japanese", "city": "HIROSHIMA" },
-        { "nationality": "Japanese", "city": "SENDAI" },
-        { "nationality": "Japanese", "city": "KOBE" },
-        { "nationality": "Japanese", "city": "YOKOHAMA" },
-
-        { "nationality": "Malaysian", "city": "KUALA LUMPUR" },
-        { "nationality": "Malaysian", "city": "PENANG" },
-        { "nationality": "Malaysian", "city": "JOHOR" },
-        { "nationality": "Malaysian", "city": "NEGERI SEMBILAN" },
-        { "nationality": "Malaysian", "city": "MELAKA" },
-        { "nationality": "Malaysian", "city": "KEDAH" },
-        { "nationality": "Malaysian", "city": "PERAK" },
-        { "nationality": "Malaysian", "city": "SARAWAK" },
-        { "nationality": "Malaysian", "city": "SABAH" },
-        { "nationality": "Malaysian", "city": "TERENGGANU" }
-    ]
+    "greenNotes": {
+        "Chinese": [
+            "HENAN",
+            "GUANGDONG",
+            "SHANGHAI",
+            "BEIJING",
+            "FUJIAN",
+            "ZHEJIANG",
+            "JIANGSU",
+            "SHANDONG",
+            "SICHUAN",
+            "HUBEI"
+        ],
+        "Japanese": [
+            "TOKYO",
+            "OSAKA",
+            "KYOTO",
+            "NAGOYA",
+            "FUKUOKA",
+            "SAPPORO",
+            "HIROSHIMA",
+            "SENDAI",
+            "KOBE",
+            "YOKOHAMA"
+        ],
+        "Malaysian": [
+            "KUALA LUMPUR",
+            "PENANG",
+            "JOHOR",
+            "NEGERI SEMBILAN",
+            "MELAKA",
+            "KEDAH",
+            "PERAK",
+            "SARAWAK",
+            "SABAH",
+            "TERENGGANU"
+        ]
+    }
 }
