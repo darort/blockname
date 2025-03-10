@@ -1,7 +1,9 @@
 {
     "greenNotes": [
-        { "nationality": "Chinese", "cities": ["HENAN", "GUANGDONG", "SHANGHAI", "BEIJING", "FUJIAN", "ZHEJIANG", "JIANGSU", "SHANDONG", "SICHUAN", "HUBEI"] },
-        { "nationality": "Japanese", "cities": ["TOKYO", "OSAKA", "KYOTO", "NAGOYA", "FUKUOKA", "SAPPORO", "HIROSHIMA", "SENDAI", "KOBE", "YOKOHAMA"] },
-        { "nationality": "Malaysian", "cities": ["KUALA LUMPUR", "PENANG", "JOHOR", "NEGERI SEMBILAN", "MELAKA", "KEDAH", "PERAK", "SARAWAK", "SABAH", "TERENGGANU"] }
+        { "nationality": "Chinese", "city": "HENAN" },
+        { "nationality": "Chinese", "city": "GUANGDONG" },
+        { "nationality": "Japanese", "city": "TOKYO" },
+        { "nationality": "Malaysian", "city": "NEGERI SEMBILAN" },
+        { "nationality": "Indian", "city": "MUMBAI" }
     ]
 }
