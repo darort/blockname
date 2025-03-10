@@ -1,9 +1,7 @@
 {
-    "correctMatches": [
-        {"nationality": "Chinese", "city": "HENAN"},
-        {"nationality": "Vietnamese", "city": "BA RIA VUNG TAU"},
-        {"nationality": "American", "city": "NEW YORK"},
-        {"nationality": "Japanese", "city": "TOKYO"},
-        {"nationality": "Indian", "city": "DELHI"}
+    "greenNotes": [
+        { "nationality": "Chinese", "city": "HENAN" },
+        { "nationality": "Indian", "city": "MUMBAI" },
+        { "nationality": "American", "city": "NEW YORK" }
     ]
 }
