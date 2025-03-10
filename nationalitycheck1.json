@@ -1,7 +1,6 @@
 {
     "greenNotes": [
-        { "nationality": "Chinese", "city": "HENAN" },
-        { "nationality": "Indian", "city": "MUMBAI" },
-        { "nationality": "American", "city": "NEW YORK" }
+        {"nationality": "Chinese", "city": "HENAN"},
+        {"nationality": "Chinese", "city": "HUNAN"}
     ]
 }
