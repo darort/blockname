@@ -130,6 +130,28 @@
             "SABAH",
             "TERENGGANU"
         ],
+        "Filipino": [
+            "MANILA, METRO MANILA",
+            "QUEZON CITY, METRO MANILA",
+            "DAVAO CITY, DAVAO DEL SUR",
+            "CEBU CITY, CEBU",
+            "ZAMBOANGA CITY, ZAMBOANGA DEL SUR",
+            "TAGUIG, METRO MANILA",
+            "ANTIPOLO, RIZAL",
+            "PASAY, METRO MANILA",
+            "CAGAYAN DE ORO, MISAMIS ORIENTAL",
+            "PARANAQUE, METRO MANILA",
+            "MAKATI, METRO MANILA",
+            "BACOOR, CAVITE",
+            "LAS PINAS, METRO MANILA",
+            "MUNTINLUPA, METRO MANILA",
+            "CALOOCAN, METRO MANILA",
+            "VALENZUELA, METRO MANILA",
+            "MARIKINA, METRO MANILA",
+            "ILOILO CITY, ILOILO",
+            "SAN JOSE DEL MONTE, BULACAN",
+            "MANDALUYONG, METRO MANILA"
+        ],
         "Indonesian": [
             "JAKARTA",
             "SURABAYA",
