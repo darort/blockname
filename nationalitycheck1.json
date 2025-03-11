@@ -91,6 +91,7 @@
             "TAIWAN",
             "TAICHUNG",
             "TAICHUNG CITY",
+            "TAOYUAN CITY",
             "TAINAN",
             "BANQIAO",
             "HSINCHU",
@@ -114,6 +115,9 @@
         ],
         "Japanese": [
             "TOKYO",
+            "GUMMA",
+            "KANAGAWA",
+            "IBARAKI",
             "OSAKA",
             "KYOTO",
             "NAGOYA",
