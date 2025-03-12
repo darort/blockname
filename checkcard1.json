@@ -3,16 +3,28 @@
         {
             "pattern": "error",
             "note": "ERR"
+        },
+        {
+            "pattern": ".*fail.*",
+            "note": "FAIL"
         }
     ],
     "greenNotes": [
         {
-            "pattern": ".*",
-            "note": "✓"
+            "pattern": "success",
+            "note": "OK"
         },
         {
-            "pattern": "GAO HUI",
-            "note": "✔good"
+            "pattern": "Alice",        // Specific name example
+            "note": "✅good"         // Changed from ✔good to ✅good
+        },
+        {
+            "pattern": "Bob",          // Specific name example
+            "note": "✅good"         // Changed from ✔good to ✅good
+        },
+        {
+            "pattern": ".*",           // Catch-all for all other names
+            "note": "✅"             // Changed from ✔ to ✅
         }
     ]
 }
