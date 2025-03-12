@@ -1,12 +1,22 @@
 {
-    "redNotes": [],
+    "redNotes": [
+        {
+            "pattern": "error",
+            "note": "ERR"
+        },
+        {
+            "pattern": ".*fail.*",
+            "note": "FAIL"
+        }
+    ],
     "greenNotes": [
-	{"pattern": "LEONG WEI AN", "note": "✓"},
-        {"pattern": "GAO HUI", "note": "✓good"},
-        {"pattern": "JANE SMITH", "note": "✓excellent"},
-        {"pattern": "AHMAD BIN ALI", "note": "✓complete"},
-        {"pattern": "MARY TAN", "note": "✓verified"},
-        {"pattern": "KUMAR SINGH", "note": "✓processed"},
-        {"pattern": ".*", "note": "✓done"}
+        {
+            "pattern": "success",
+            "note": "OK"
+        },
+        {
+            "pattern": ".*complete.*",
+            "note": "✔"  // Changed from ✓ to ✔ (you can replace with any symbol)
+        }
     ]
 }
