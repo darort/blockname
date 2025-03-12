@@ -16,7 +16,19 @@
         },
         {
             "pattern": ".*complete.*",
-            "note": "✔"  // Changed from ✓ to ✔ (you can replace with any symbol)
+            "note": "✔"
+        },
+        {
+            "pattern": "John Doe",  // Specific name example
+            "note": "✔good"
+        },
+        {
+            "pattern": "Jane Smith",  // Another specific name example
+            "note": "✔good"
+        },
+        {
+            "pattern": ".*",  // Catch-all for any name when Card Received At is filled
+            "note": "✔"
         }
     ]
 }
