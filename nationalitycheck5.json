@@ -212,7 +212,6 @@
             "Mawlamyine"
         ],
         "Thai": [
-            "SINDHULI",
             "PHAYAO",
             "BANGKOK",
             "CHIANG MAI",
@@ -226,6 +225,7 @@
             "SURAT THANI"
         ],
         "Nepalese": [
+            "SINDHULI",
             "KATHMANDU",
             "NAWALPARASI",
             "POKHARA",
