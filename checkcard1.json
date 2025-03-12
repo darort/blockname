@@ -3,32 +3,16 @@
         {
             "pattern": "error",
             "note": "ERR"
-        },
-        {
-            "pattern": ".*fail.*",
-            "note": "FAIL"
         }
     ],
     "greenNotes": [
         {
-            "pattern": "success",
-            "note": "OK"
-        },
-        {
-            "pattern": ".*complete.*",
+            "pattern": ".*",
             "note": "✔"
         },
         {
-            "pattern": "John Doe",  // Specific name example
+            "pattern": "Alice",
             "note": "✔good"
-        },
-        {
-            "pattern": "GAO HUI",  // Another specific name example
-            "note": "✔good"
-        },
-        {
-            "pattern": ".*",  // Catch-all for any name when Card Received At is filled
-            "note": "✔"
         }
     ]
 }
