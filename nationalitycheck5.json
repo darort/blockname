@@ -132,7 +132,7 @@
             "tooShortNote": "✕"
         },
         "South Korean": {
-            "length": 10,
+            "length": 9,
             "validNote": "✓",
             "tooLongNote": "✕",
             "tooShortNote": "✕"
