@@ -1,7 +1,7 @@
 {
     "greenNotes": {
         "Chinese": [
-            "TIANJIN", "HONG KONG", "NEI MONGOL", "HENAN", "XINJIANG", "SHANXI", "SHAANXI", "GUANGXI", "JIANGXI", "GUIZHOU", "ANHUI", "GANSU", "HEBEI", "HEILONGJIANG", "GUANGDONG", "CHONGQING", "LIAONING", "SHANGHAI", "BEIJING", "FUJIAN", "ZHEJIANG", "JIANGSU", "SHANDONG", "SICHUAN", "YUNNAN", "JILIN", "HUNAN", "HUBEI"
+            "TIANJIN", "HONG KONG", "NEI MONGOL", "HENAN", "✕INJIANG", "SHAN✕I", "SHAAN✕I", "GUANG✕I", "JIANG✕I", "GUIZHOU", "ANHUI", "GANSU", "HEBEI", "HEILONGJIANG", "GUANGDONG", "CHONGQING", "LIAONING", "SHANGHAI", "BEIJING", "FUJIAN", "ZHEJIANG", "JIANGSU", "SHANDONG", "SICHUAN", "YUNNAN", "JILIN", "HUNAN", "HUBEI"
         ],
         "Vietnamese": [
             "LAO CAI", "KHANH HOA", "BAC KAN", "DONG NAI", "VINH LONG", "HAI DUONG", "DAK LAK", "SON LA", "YEN BAI", "QUANG BINH", "DONG THAP", "AN GIANG", "LANG SON", "HANOI", "QUANG NINH", "NGHE AN", "NINH THUAN", "BA RIA VUNG TAU", "BINH DUONG", "KIEN GIANG", "THAI NGUYEN", "VIETNAM", "HO CHI MINH", "CAO BANG", "DA NANG", "PHU THO", "THAI BINH", "TAY NINN", "CA MAU", "HAI PHONG", "CAN THO", "BIEN HOA", "THANH HOA", "HUE", "NHA TRANG", "VUNG TAU", "QUY NHON"
@@ -13,7 +13,7 @@
             "TAIPEI CITY", "KAOHSIUNG CITY", "TAINAN CITY", "TAIPEI", "KAOHSIUNG", "TAIWAN", "TAICHUNG", "TAICHUNG CITY", "TAOYUAN CITY", "NEW TAIPEI CITY", "TAINAN", "BANQIAO", "HSINCHU", "TAOYUAN", "KEELUNG", "CHIAYI", "TAITUNG"
         ],
         "Laotian": [
-            "BORIKHAMXAY", "VIENTIANE", "LUANG PRABANG", "PAKSE", "SAVANNAKHET", "THAKHEK", "PHONSAVAN", "LUANG NAMTHA", "MUANG XAY", "PAKXE", "BAN HOUEISAY"
+            "BORIKHAM✕AY", "VIENTIANE", "LUANG PRABANG", "PAKSE", "SAVANNAKHET", "THAKHEK", "PHONSAVAN", "LUANG NAMTHA", "MUANG ✕AY", "PAK✕E", "BAN HOUEISAY"
         ],
         "Japanese": [
             "TOKYO", "GUMMA", "KANAGAWA", "IBARAKI", "OSAKA", "KYOTO", "NAGOYA", "FUKUOKA", "SAPPORO", "HIROSHIMA", "SENDAI", "KOBE", "YOKOHAMA"
@@ -50,92 +50,92 @@
         "Chinese": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Vietnamese": {
             "length": 8,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Indian": {
             "length": 8,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Taiwanese": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Laotian": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Japanese": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Malaysian": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Filipino": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Indonesian": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Burmese": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Thai": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Nepalese": {
             "length": 8,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Bangladeshi": {
             "length": 8,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "Pakistani": {
             "length": 9,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         },
         "South Korean": {
             "length": 10,
             "validNote": "✓",
-            "tooLongNote": "X",
-            "tooShortNote": "X"
+            "tooLongNote": "✕",
+            "tooShortNote": "✕"
         }
     }
 }
