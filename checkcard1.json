@@ -8,7 +8,7 @@
     "greenNotes": [
         {
             "pattern": ".*",
-            "note": "✔"
+            "note": "✓"
         },
         {
             "pattern": "Alice",
