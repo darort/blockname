@@ -1,18 +1,1 @@
-{
-    "redNotes": [
-        {
-            "pattern": "error",
-            "note": "ERR"
-        }
-    ],
-    "greenNotes": [
-        {
-            "pattern": ".*",
-            "note": ""
-        },
-        {
-            "pattern": "Alice",
-            "note": "✔good"
-        }
-    ]
-}
+
