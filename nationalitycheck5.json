@@ -203,6 +203,7 @@
             "YOGYAKARTA"
         ],
         "Burmese": [
+            "LAUKKING",
             "LASHIO",
             "YANGON",
             "MANDALAY",
@@ -289,6 +290,7 @@
         ],
         "South Korean": [
             "KOREA",
+            "SOUTH KOREA",
             "KOREAN"
         ]
     }
