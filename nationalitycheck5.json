@@ -47,20 +47,95 @@
         ]
     },
     "passportRules": {
-        "Chinese": { "length": 9 },
-        "Vietnamese": { "length": 8 },
-        "Indian": { "length": 8 },
-        "Taiwanese": { "length": 9 },
-        "Laotian": { "length": 9 },
-        "Japanese": { "length": 9 },
-        "Malaysian": { "length": 9 },
-        "Filipino": { "length": 9 },
-        "Indonesian": { "length": 9 },
-        "Burmese": { "length": 9 },
-        "Thai": { "length": 9 },
-        "Nepalese": { "length": 8 },
-        "Bangladeshi": { "length": 8 },
-        "Pakistani": { "length": 9 },
-        "South Korean": { "length": 10 }
+        "Chinese": {
+            "length": 9,
+            "validNote": "✓",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Vietnamese": {
+            "length": 8,
+            "validNote": "✔️ 8 OK",
+            "tooLongNote": "✖️ Over 8",
+            "tooShortNote": "✖️ Under 8"
+        },
+        "Indian": {
+            "length": 8,
+            "validNote": "✔️ 8 OK",
+            "tooLongNote": "✖️ Over 8",
+            "tooShortNote": "✖️ Under 8"
+        },
+        "Taiwanese": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Laotian": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Japanese": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Malaysian": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Filipino": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Indonesian": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Burmese": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Thai": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "Nepalese": {
+            "length": 8,
+            "validNote": "✔️ 8 OK",
+            "tooLongNote": "✖️ Over 8",
+            "tooShortNote": "✖️ Under 8"
+        },
+        "Bangladeshi": {
+            "length": 8,
+            "validNote": "✔️ 8 OK",
+            "tooLongNote": "✖️ Over 8",
+            "tooShortNote": "✖️ Under 8"
+        },
+        "Pakistani": {
+            "length": 9,
+            "validNote": "✔️ 9 OK",
+            "tooLongNote": "✖️ Over 9",
+            "tooShortNote": "✖️ Under 9"
+        },
+        "South Korean": {
+            "length": 10,
+            "validNote": "✔️ 10 OK",
+            "tooLongNote": "✖️ Over 10",
+            "tooShortNote": "✖️ Under 10"
+        }
     }
 }
