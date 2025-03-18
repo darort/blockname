@@ -1,0 +1,10 @@
+{
+  "redNotes": [
+    { "pattern": ".*overdue.*", "note": "❌ Overdue" },
+    { "pattern": ".*urgent.*", "note": "⚠️ Urgent" }
+  ],
+  "greenNotes": [
+    { "pattern": "John Doe", "note": "✅ Good Worker" },
+    { "pattern": ".*", "note": "🟢 Standard" }
+  ]
+}
