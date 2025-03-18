@@ -1,6 +1,8 @@
 {
     "version": "6.0",
     "blockedNames": [
+        {"name": "PA6674620", "note": " ជនជាតិ​ Australian NEWS"},
+        {"name": "551538429", "note": "youtube"},
         {"name": "N112698", "note": "ទំនាក់ទំនងព័ត៌មាន LIU-H2666"},
         {"name": "664178369", "note": "(​VPPT-E1009 គាត់ធ្លាប់ធ្វើខាងព័ត៌មាន​ និង បកប្រែអត្ថបទ)"},
         {"name": "TAN CHE HONG", "note": "ហាមបញ្ចូល"},
