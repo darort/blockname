@@ -1,0 +1,18 @@
+{
+    "redNotes": [
+        {
+            "pattern": "error",
+            "note": "ERR"
+        }
+    ],
+    "greenNotes": [
+        {
+            "pattern": "aaaaaaaaasdasdadddddd",
+            "note": "✓"
+        },
+        {
+            "pattern": "Paid",
+            "note": "$"
+        }
+    ]
+}
