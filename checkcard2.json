@@ -11,8 +11,8 @@
             "note": "✓"
         },
         {
-            "pattern": "Alice",
-            "note": "✔good"
+            "pattern": "Paid",
+            "note": "$"
         }
     ]
 }
