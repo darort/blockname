@@ -1,6 +1,6 @@
 {
   "urls": [
-    "https://zanarita.uk/*",
+    "https://.*zanarita.uk/*",
     "https://fwcms.mlvt.gov.kh/*",
     "https://kingwinagency.com/*"
   ]
