@@ -1,7 +1,7 @@
 {
   "websites": [
-    "https://zanarita.uk",
-    "https://fwcms.mlvt.gov.kh",
-    "https://kingwinagency.com"
+    "https://*zanarita.uk/*",
+    "https://fwcms.mlvt.gov.kh/*",
+    "https://kingwinagency.com/*"
   ]
 }
