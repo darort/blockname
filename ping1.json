@@ -1,5 +1,7 @@
 {
-  "url": "https://*zanarita.uk/*",
-  "url": "https://fwcms.mlvt.gov.kh/*",
-  "url": "https://kingwinagency.com/*"
+  "websites": [
+    "https://zanarita.uk",
+    "https://fwcms.mlvt.gov.kh",
+    "https://kingwinagency.com"
+  ]
 }
