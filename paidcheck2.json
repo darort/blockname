@@ -1,7 +1,7 @@
 {
     "redNotes": [
         {
-            "pattern": "errorrrrrrrrrrrrrrrrrrrr",
+            "pattern": "error",
             "note": "ERR"
         }
     ],
@@ -9,6 +9,14 @@
         {
             "pattern": "Paid",
             "note": "$"
+        }
+    ],
+    "disabledIcons": [
+        {
+            "selector": "i.glyphicon-pencil.alignMiddle"
+        },
+        {
+            "selector": "i.glyphicon-picture.alignMiddle"
         }
     ]
 }
