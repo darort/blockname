@@ -6,5 +6,5 @@
     "greenNotes": [
         { "pattern": "success", "note": "Success" }
     ],
-    "paidSign": "$"  // New field for the sign to display when "Paid"
+    "paidSign": "ook"  // New field for the sign to display when "Paid"
 }
