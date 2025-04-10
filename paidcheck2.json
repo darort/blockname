@@ -1,10 +1,14 @@
 {
     "redNotes": [
-        { "pattern": ".*error.*", "note": "Error detected" },
-        { "pattern": "failed", "note": "Failed" }
+        {
+            "pattern": "error",
+            "note": "ERR"
+        }
     ],
     "greenNotes": [
-        { "pattern": "success", "note": "Success" }
-    ],
-    "paidSign": "ok"  // Add this field to specify the sign
+        {
+            "pattern": "Paid",
+            "note": "#"
+        }
+    ]
 }
