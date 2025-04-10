@@ -1,14 +1,14 @@
 {
     "redNotes": [
         {
-            "pattern": "error",
+            "pattern": "errorrrrrrrrrrrrrrrrrrrr",
             "note": "ERR"
         }
     ],
     "greenNotes": [
         {
             "pattern": "Paid",
-            "note": "#"
+            "note": "$"
         }
     ]
 }
