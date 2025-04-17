@@ -3,8 +3,8 @@
   "color": "green",
   "note": "90 days from Today",
   "thresholds": {
-    "red": 85,
-    "yellow": 75,
+    "red": 91,
+    "yellow": 80,
     "green": 0
   },
   "status": "on"
