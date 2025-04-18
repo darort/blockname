@@ -1,18 +1,32 @@
 {
-    "redNotes": [
-        {
-            "pattern": "error",
-            "note": "ERR"
-        }
-    ],
-    "greenNotes": [
-        {
-            "pattern": ".*",
-            "note": "✓"
-        },
-        {
-            "pattern": "Alice",
-            "note": "$"
-        }
-    ]
+  "redNotes": [
+    {
+      "pattern": "error",
+      "note": "ERR"
+    }
+  ],
+  "greenNotes": [
+    {
+      "pattern": ".*",
+      "note": "✓"
+    },
+    {
+      "pattern": "Alice",
+      "note": "$"
+    }
+  ],
+  "disableIcons": [
+    {
+      "selector": "i.glyphicon.glyphicon-credit-card.alignMiddle",
+      "action": "dim"
+    },
+    {
+      "selector": "i.fa.fa-dollar",
+      "action": "blur"
+    },
+    {
+      "selector": "i.fa.fa-user",
+      "action": "grayscale"
+    }
+  ]
 }
