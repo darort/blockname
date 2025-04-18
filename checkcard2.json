@@ -18,15 +18,11 @@
   "disableIcons": [
     {
       "selector": "i.glyphicon.glyphicon-credit-card.alignMiddle",
-      "action": "dim"
+      "action": "disable"
     },
     {
       "selector": "i.fa.fa-dollar",
-      "action": "blur"
-    },
-    {
-      "selector": "i.fa.fa-user",
-      "action": "grayscale"
+      "action": "disable"
     }
   ]
 }
