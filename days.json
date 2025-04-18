@@ -1,7 +1,7 @@
 {
   "days": 90,
-  "color": "red",
-  "note": "sUPPER kENN",
+  "color": "green",
+  "note": "90 days from today",
   "thresholds": {
     "red": 90,
     "yellow": 80,
