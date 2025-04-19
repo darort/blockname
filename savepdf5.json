@@ -2,5 +2,6 @@
   "from_date": "01/01/2025",
   "link_text": "Generate",
   "link_color": "blue",
-  "feature_status": "on"
+  "feature_status": "on",
+  "placeholder_text": "Enter Line Code"
 }
