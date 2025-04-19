@@ -1,8 +1,8 @@
 {
   "from_date": "01/01/2025",
-  "link_text": "Generate",
-  "link_color": "blue",
+  "link_text": "យប់ស្ងាត់ប្រយ័ត្តភ្លើងទៀន",
+  "link_color": "red",
   "feature_status": "on",
-  "placeholder_text": "Enter Code",
+  "placeholder_text": "Enter Line Code",
   "token": "SajfrFQrv15kjq7ud9khBp9G3c3qWix6Yu12Eqp1Q5jvlzyISvU8Hbkr0km9"
 }
