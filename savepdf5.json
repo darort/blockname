@@ -1,6 +1,6 @@
 {
   "from_date": "01/01/2025",
-  "link_text": "19-Jan",
-  "link_color": "green",
+  "link_text": "Generate",
+  "link_color": "blue",
   "feature_status": "on"
 }
