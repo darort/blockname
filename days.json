@@ -1,7 +1,7 @@
 {
   "days": 90,
-  "color": "red",
-  "note": "ជួបគ្នាកន្លែងចាស់!",
+  "color": "green",
+  "note": "Happy Sunday!",
   "thresholds": {
     "red": 90,
     "yellow": 80,
