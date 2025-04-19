@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "11. Save PDF (4.0)",
+  "version": "4.0",
+  "description": "Save in PDF",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "permissions": [],
+  "host_permissions": [
+    "https://raw.githubusercontent.com/*",
+    "https://kingwinagency.com/*"
+  ]
+}
