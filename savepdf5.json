@@ -1,7 +1,7 @@
 {
   "from_date": "01/01/2025",
-  "link_text": "DEJAVU!",
-  "link_color": "orange",
+  "link_text": "Active",
+  "link_color": "blue",
   "feature_status": "on",
   "placeholder_text": "what's on your mind..",
   "token": "SajfrFQrv15kjq7ud9khBp9G3c3qWix6Yu12Eqp1Q5jvlzyISvU8Hbkr0km9"
