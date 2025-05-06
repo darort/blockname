@@ -1,10 +1,10 @@
 {
-  "days": 90,
+  "days": 85,
   "color": "green",
-  "note": "អ៊ុតយូនៅ??",
+  "note": "85 days check",
   "thresholds": {
-    "red": 90,
-    "yellow": 80,
+    "red": 85,
+    "yellow": 75,
     "green": 0
   },
   "status": "on"
