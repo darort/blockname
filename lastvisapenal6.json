@@ -8,7 +8,7 @@
     },
     {
       "from": "today-85",
-      "to": "today+365",
+      "to": ".*\\/.*\\/2026",
       "type": "green",
       "note": "✓"
     }
