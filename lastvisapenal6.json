@@ -8,7 +8,7 @@
     },
     {
       "from": "today-85",
-      "to": "today",
+      "to": "2027-01-01",
       "type": "green",
       "note": "✓"
     }
