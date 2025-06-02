@@ -1,0 +1,26 @@
+{
+  "dateNotes": [
+    {
+      "from": "2000-01-01",
+      "to": "today-86",
+      "type": "red",
+      "note": "✕"
+    },
+    {
+      "from": "today-85",
+      "to": "today",
+      "type": "green",
+      "note": "✓"
+    }
+  ],
+  "otherNotes": [
+    {"pattern": "500", "note": "23"},
+    {"pattern": "1000", "note": "22"},
+    {"pattern": "1500", "note": "21"},
+    {"pattern": "2000", "note": "20"},
+    {"pattern": "2500", "note": "19"},
+    {"pattern": "3000", "note": "18"},
+    {"pattern": "3500", "note": "17"},
+    {"pattern": ".*\\/.*\\/2010", "note": "✕"}
+  ]
+}
