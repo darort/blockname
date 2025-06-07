@@ -11,7 +11,12 @@
             "color": "red"
         }
     ],
-    "redNotes": [],
+    "redNotes": [
+        {
+            "pattern": "error",
+            "note": "ERR"
+        }
+    ],
     "greenNotes": [],
     "disableIcons": []
 }
