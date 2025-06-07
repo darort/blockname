@@ -1,22 +1,17 @@
 {
     "displayRules": [
         {
-            "condition": "workPermitAndPenalPrice",
+            "condition": "hasWorkPermitAndPenal",
             "sign": "*",
             "color": "green"
         },
         {
-            "condition": "workPermitOnly",
+            "condition": "hasWorkPermitOnly",
             "sign": "*",
             "color": "red"
         }
     ],
-    "redNotes": [
-        {
-            "pattern": "error",
-            "note": "ERR"
-        }
-    ],
+    "redNotes": [],
     "greenNotes": [],
     "disableIcons": []
 }
