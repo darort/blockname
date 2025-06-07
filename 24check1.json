@@ -2,12 +2,12 @@
     "displayRules": [
         {
             "condition": "hasWorkPermitAndPenal",
-            "sign": "*",
+            "sign": "@",
             "color": "green"
         },
         {
             "condition": "hasWorkPermitOnly",
-            "sign": "*",
+            "sign": "@",
             "color": "red"
         }
     ],
