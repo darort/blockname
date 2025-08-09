@@ -1,8 +1,7 @@
 {
-  "targetExtensionId": "nlmmgnhgdeffjkdckmikfpnddkbbfkkk",
-  "buttonLabel": "Loading",
-  "showButton": true
+  "targetExtensionId": "abcdefghijklmnoabcdefghijklmno",
+  "buttonLabel": "Generate",
+  "showButton": true,
+  "buttonTextColor": "white",
+  "buttonBgColor": "green"
 }
-
-
-
