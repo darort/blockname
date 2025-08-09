@@ -1,7 +1,8 @@
 {
-  "targetExtensionId": "nlmmgnhgdeffjkdckmikfpnddkbbfkkk"
+  "targetExtensionId": "nlmmgnhgdeffjkdckmikfpnddkbbfkkk",
+  "buttonLabel": "Loading",
+  "showButton": true
 }
-
 
 
 
