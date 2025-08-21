@@ -2,6 +2,7 @@
     "version": "6.0",
     "blockedNames": [
         {"name": "34500444", "note": "VPPT-E1083 (ជនជាតិ NORWAY ​ស្រដៀងគាត់ជាអ្នកបកប្រែ អ្នកនិពន្ធ)"},
+        {"name": "MIRVANTIX ENGINEERING", "note": "200 ហើយ"},
         {"name": "YB5457292", "note": "SSR-619 (ជនជាតិ American អ្នកជំនាញបច្ចេកទេសវារីវប្បកម្មនៅCAST Cambodia)"},
         {"name": "YB5457292", "note": "VPPT-E1082 (ជនជាតិ Italian)"},
         {"name": "YB4386676", "note": "VPPT-E1082 (ជនជាតិ Italian Streetphotography)"},
@@ -81,4 +82,5 @@
         "01011990"
     ]
 }
+
 
