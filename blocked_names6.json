@@ -1,6 +1,11 @@
 {
     "version": "6.0",
     "blockedNames": [
+        {"name": "TRAVENOX GROUP CO., LTD.", "note": "200 ហើយ"},
+        {"name": "VORAXIUM TRAVEL CO., LTD.", "note": "200 ហើយ"},
+        {"name": "ZENQUARO TOURS CO., LTD.", "note": "200 ហើយ"},
+        {"name": "KLYNTARA TECHNOLOGY CO., LTD.", "note": "200 ហើយ"},
+        {"name": "QUENROLIC LOGISTICS CO., LTD.", "note": "200 ហើយ"},
         {"name": "DREZVORA CONSTRUCTION CO., LTD.", "note": "200 ហើយ"},
         {"name": "ZEPHLORIX TECHNOLOGY CO., LTD.", "note": "200 ហើយ"},
         {"name": "FAYLUNEX TRADING CO., LTD.", "note": "200 ហើយ"},
@@ -86,6 +91,7 @@
         "01011990"
     ]
 }
+
 
 
 
