@@ -1,7 +1,7 @@
 {
     "version": "6.0",
     "blockedNames": [
-        {"name": "THAI", "note": "Not Allow"},
+        {"name": "THAILAND", "note": "Not Allow"},
         {"name": "TRAVENOX GROUP CO., LTD.", "note": "200 ហើយ"},
         {"name": "VORAXIUM TRAVEL CO., LTD.", "note": "200 ហើយ"},
         {"name": "ZENQUARO TOURS CO., LTD.", "note": "200 ហើយ"},
@@ -130,3 +130,4 @@
         "01011990"
     ]
 }
+
