@@ -15,6 +15,10 @@
         {"name": "SKYNOVIQ TRADING CO., LTD.", "note": "200 ហើយ"},
         {"name": "KORDANEX LOGISTICS CO., LTD.", "note": "200 ហើយ"},
         {"name": "========================", "note": "=========================="},
+        {"name": "ZHANG XIAOXU", "note": "(FAKE VISA)"},
+        {"name": "HOSSEN MARUF", "note": "(ម្នាក់នេះកែលេខ ចេញចូល វីសាបង)"},
+        {"name": "ABU SALMA", "note": "(CARD កាត់តបង (TNTO))"},
+        {"name": "TU CHIH SHUN", "note": "(FAKE VISA)"},
         {"name": "WANG QI", "note": "(FAKE VISA)"},
         {"name": "EP3721214", "note": "(FAKE VISA)"},
         {"name": "CAO JIANLI", "note": "(FAKE VISA)"},
@@ -138,6 +142,7 @@
         "01011990"
     ]
 }
+
 
 
 
