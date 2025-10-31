@@ -1,6 +1,5 @@
 {
   "enabled": false,
-
   "buttonText": "Cloud",
   "buttonUrl": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
 
@@ -14,12 +13,13 @@
   },
 
   "label": {
-    "text": "Search",
+    "text": "Cloud",
     "clickable": true,
     "labelLink": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
     "color": "#007bff",
     "disableTextClick": false
   }
 }
+
 
 
