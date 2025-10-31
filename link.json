@@ -1,7 +1,7 @@
 {
   "enabled": true,
 
-  "buttonText": "My Button",
+  "buttonText": "Cloud",
   "buttonUrl": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
 
   "buttonStyle": {
@@ -21,3 +21,4 @@
     "disableTextClick": false
   }
 }
+
