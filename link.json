@@ -2,7 +2,7 @@
   "enabled": true,
 
   "buttonText": "My Button",
-  "buttonUrl": "https://example.com",
+  "buttonUrl": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
 
   "buttonStyle": {
     "background": "#e0e0e0",
@@ -16,9 +16,8 @@
   "label": {
     "text": "Search",
     "clickable": true,
-    "labelLink": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
+    "labelLink": "https://github.com/darort/blockname",
     "color": "#007bff",
     "disableTextClick": false
   }
 }
-
