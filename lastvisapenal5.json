@@ -23,13 +23,13 @@
         {"pattern": ".*\\/05\\/2025", "note": "✕"},
         {"pattern": ".*\\/06\\/2025", "note": "✕"},
         {"pattern": ".*\\/07\\/2025", "note": "✕"},
-        {"pattern": "500", "note": "23"},
-        {"pattern": "1000", "note": "22"},
-        {"pattern": "1500", "note": "21"},
-        {"pattern": "2000", "note": "20"},
-        {"pattern": "2500", "note": "19"},
-        {"pattern": "3000", "note": "18"},
-        {"pattern": "3500", "note": "17"}
+        {"pattern": "500", "note": "24"},
+        {"pattern": "1000", "note": "23"},
+        {"pattern": "1500", "note": "22"},
+        {"pattern": "2000", "note": "21"},
+        {"pattern": "2500", "note": "20"},
+        {"pattern": "3000", "note": "19"},
+        {"pattern": "3500", "note": "18"}
     ],
     "greenNotes": [
         {"pattern": ".*\\/09\\/2025", "note": "✓"},
@@ -40,6 +40,7 @@
         {"pattern": ".*\\/.*\\/2027", "note": "✓"}
     ]
 }
+
 
 
 
