@@ -4,13 +4,17 @@
     "enableDateRules": true,
     "enableOtherRules": true,
 
-    "redMinDays": 85,
+    "redMinDays": 84,
+    "yellowMinDays": 85,
+    "yellowMaxDays": 90,
+
     "greenFutureTo": "2027-01-01",
     "pastDateFrom": "2020-01-01"
   },
   "dateNotes": [
     { "type": "red", "note": "✕" },
-    { "type": "green", "note": "✓" }
+    { "type": "green", "note": "✓" },
+    { "type": "yellow", "note": "-" }
   ],
   "otherNotes": [
     { "pattern": "500", "note": "24" },
