@@ -1,41 +1,22 @@
 {
   "dateNotes": [
     {
-      "from": "2020-01-01",
-      "to": "today-85",
       "type": "red",
       "note": "✕"
     },
     {
-      "from": "today-86",
-      "to": ".*\\/.*\\/2027",
       "type": "green",
       "note": "✓"
     }
   ],
   "otherNotes": [
-    {"pattern": "500", "note": "24"},
-    {"pattern": "1000", "note": "23"},
-    {"pattern": "1500", "note": "22"},
-    {"pattern": "2000", "note": "21"},
-    {"pattern": "2500", "note": "20"},
-    {"pattern": "3000", "note": "19"},
-    {"pattern": "3500", "note": "18"},
-    {"pattern": "500--", "note": "24"},
-    {"pattern": "1000--", "note": "23"},
-    {"pattern": "1500--", "note": "22"},
-    {"pattern": "2000--", "note": "21"},
-    {"pattern": "2500--", "note": "20"},
-    {"pattern": "3000--", "note": "19"},
-    {"pattern": "3500--", "note": "18"},
-    {"pattern": ".*\\/.*\\/2010", "note": "✕"}
+    { "pattern": "500", "note": "24" },
+    { "pattern": "1000", "note": "23" },
+    { "pattern": "1500", "note": "22" },
+    { "pattern": "2000", "note": "21" },
+    { "pattern": "2500", "note": "20" },
+    { "pattern": "3000", "note": "19" },
+    { "pattern": "3500", "note": "18" },
+    { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
-
-
-
-
-
-
-
-
