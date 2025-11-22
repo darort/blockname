@@ -1,21 +1,16 @@
 {
   "settings": {
-    "enabled": true,           // disable all highlighting
-    "enableDateRules": true,  // disable date ✓/✕
-    "enableOtherRules": true,  // disable 500/1000/... rules (false)
+    "enabled": true,
+    "enableDateRules": true,
+    "enableOtherRules": true,
+
     "redMinDays": 85,
     "greenFutureTo": "2027-01-01",
     "pastDateFrom": "2020-01-01"
   },
   "dateNotes": [
-    {
-      "type": "red",
-      "note": "✕"
-    },
-    {
-      "type": "green",
-      "note": "✓"
-    }
+    { "type": "red", "note": "✕" },
+    { "type": "green", "note": "✓" }
   ],
   "otherNotes": [
     { "pattern": "500", "note": "24" },
@@ -28,6 +23,3 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
-
-
-
