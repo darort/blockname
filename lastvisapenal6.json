@@ -2,12 +2,12 @@
   "dateNotes": [
     {
       "from": "2020-01-01",
-      "to": "today-86",
+      "to": "today-85",
       "type": "red",
       "note": "✕"
     },
     {
-      "from": "today-85",
+      "from": "today-86",
       "to": ".*\\/.*\\/2027",
       "type": "green",
       "note": "✓"
@@ -31,6 +31,7 @@
     {"pattern": ".*\\/.*\\/2010", "note": "✕"}
   ]
 }
+
 
 
 
