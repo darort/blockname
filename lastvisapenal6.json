@@ -1,8 +1,8 @@
 {
   "settings": {
-    "enabled": true,
-    "enableDateRules": true,
-    "enableOtherRules": true,
+    "enabled": true,           // disable all highlighting
+    "enableDateRules": true,  // disable date ✓/✕
+    "enableOtherRules": true,  // disable 500/1000/... rules (false)
 
     "redMinDays": 85,
     "greenFutureTo": "2027-01-01",
@@ -29,3 +29,4 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
+
