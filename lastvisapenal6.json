@@ -5,13 +5,8 @@
     "enableOtherRules": true,
 
     "redMinDays": 84,
-
     "yellowMinDays": 85,
     "yellowMaxDays": 89,
-
-    "yellowDisplayMode": "days", //"yellowDisplayMode": "days" //"yellowDisplayMode": "note"
-    "yellowBgColor": "yellow", 
-    "yellowTextColor": "black",
 
     "greenFutureTo": "2027-01-01",
     "pastDateFrom": "2020-01-01"
@@ -32,4 +27,3 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
-
