@@ -10,7 +10,7 @@
     "yellowMaxDays": 89,
 
     "yellowDisplayMode": "days", //"yellowDisplayMode": "days" //"yellowDisplayMode": "note"
-    "yellowBgColor": "orange", 
+    "yellowBgColor": "yellow", 
     "yellowTextColor": "black",
 
     "greenFutureTo": "2027-01-01",
@@ -32,3 +32,4 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
+
