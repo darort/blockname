@@ -5,8 +5,13 @@
     "enableOtherRules": true,
 
     "redMinDays": 84,
+
     "yellowMinDays": 85,
     "yellowMaxDays": 89,
+
+    "yellowDisplayMode": "days", //"yellowDisplayMode": "days" //"yellowDisplayMode": "note"
+    "yellowBgColor": "orange", 
+    "yellowTextColor": "black",
 
     "greenFutureTo": "2027-01-01",
     "pastDateFrom": "2020-01-01"
@@ -14,7 +19,7 @@
   "dateNotes": [
     { "type": "red", "note": "✕" },
     { "type": "green", "note": "✓" },
-    { "type": "orange", "note": "!!" }
+    { "type": "yellow", "note": "!!" }
   ],
   "otherNotes": [
     { "pattern": "500", "note": "24" },
@@ -27,5 +32,3 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
-
-
