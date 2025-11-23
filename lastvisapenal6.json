@@ -14,7 +14,7 @@
   "dateNotes": [
     { "type": "red", "note": "✕" },
     { "type": "green", "note": "✓" },
-    { "type": "yellow", "note": "-" }
+    { "type": "orange", "note": "!!" }
   ],
   "otherNotes": [
     { "pattern": "500", "note": "24" },
@@ -27,4 +27,5 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
+
 
