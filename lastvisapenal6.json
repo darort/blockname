@@ -8,7 +8,7 @@
     "yellowMinDays": 85,
     "yellowMaxDays": 89,
 
-    "greenFutureTo": "2027-01-01",
+    "greenFutureTo": "2028-01-01",
     "pastDateFrom": "2020-01-01"
   },
   "dateNotes": [
@@ -27,3 +27,4 @@
     { "pattern": ".*\\/.*\\/2010", "note": "✕" }
   ]
 }
+
