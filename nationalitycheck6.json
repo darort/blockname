@@ -72,7 +72,7 @@
             "tooShortNote": "✕"
         },
         "Laotian": {
-            "length": 9,
+            "length": 8,
             "validNote": "✓",
             "tooLongNote": "✕",
             "tooShortNote": "✕"
@@ -139,6 +139,7 @@
         }
     }
 }
+
 
 
 
