@@ -18,6 +18,21 @@
         {"name": "SKYNOVIQ TRADING CO., LTD.", "note": "200 ហើយ"},
         {"name": "KORDANEX LOGISTICS CO., LTD.", "note": "200 ហើយ"},
         {"name": "========================", "note": "=========================="},
+        {"name": "RIAN DELON", "note": "ភ្ងៀវ CANCEL តែចេញកាត E5839832 SHV-SL893"},
+        {"name": "E5839832", "note": "ភ្ងៀវ CANCEL តែចេញកាត RIAN DELON SHV-SL893"},
+        {"name": "ZHANG BINGFENG", "note": "ភ្ងៀវ CANCEL តែចេញកាត EH8060462 SHV-SL915"},
+        {"name": "EH8060462", "note": "ភ្ងៀវ CANCEL តែចេញកាត ZHANG BINGFENG SHV-SL915"},
+        {"name": "QIN XIONG", "note": "ភ្ងៀវ CANCEL តែចេញកាត EH5069814 SHV-SDNT1382"},
+        {"name": "EH5069814", "note": "ភ្ងៀវ CANCEL តែចេញកាត QIN XIONG SHV-SDNT1382"},
+        {"name": "A2826369", "note": "ភ្ងៀវ CANCEL តែចេញកាត BEGENCHMYRADOV ARSLAN TAG-SO2457"},
+        {"name": "BEGENCHMYRADOV ARSLAN", "note": "ភ្ងៀវ CANCEL តែចេញកាត A2826369 TAG-SO2457"},
+        {"name": "EM1813092", "note": "ភ្ងៀវ CANCEL តែចេញកាត CHEN YIFEI S-PW-71"},
+        {"name": "CHEN YIFEI", "note": "ភ្ងៀវ CANCEL តែចេញកាត EM1813092 S-PW-71"},
+        {"name": "C8790208", "note": "ភ្ងៀវ CANCEL តែចេញកាត DAU THI TAM MT-3641"},
+        {"name": "DAU THI TAM", "note": "ភ្ងៀវ CANCEL តែចេញកាត C8790208 MT-3641"},
+        {"name": "EF9223905", "note": "ភ្ងៀវ CANCEL តែចេញកាត WANG JINDUI CBM-317 S-BAO-322"},
+        {"name": "WANG JINDUI", "note": "ភ្ងៀវ CANCEL តែចេញកាត EF9223905 CBM-317 S-BAO-322"},
+        {"name": "========================", "note": "=========================="},
         {"name": "ZHANG XIAOXU", "note": "(FAKE VISA)"},
         {"name": "HOSSEN MARUF", "note": "(ម្នាក់នេះកែលេខ ចេញចូល វីសាបង)"},
         {"name": "ABU SALMA", "note": "(CARD កាត់តបង (TNTO))"},
@@ -110,15 +125,8 @@
         {"name": "BDHRLH9K5", "note": "R&D Manager/Company: OYIKA CO LTD"},
         {"name": "C5MP5GWJ2", "note": "Country Manager/Company: OYIKA CO LTD"},
         {"name": "FG194539", "note": "Search in google :Senior Chinese-English Translator"},
-        {"name": "A2826369", "note": "ជនជាតិTurkmenistan(កីឡាករបាល់ទះ)"},
         {"name": "16CH82811", "note": "ASEAN Development Advisor"},
         {"name": "A27400161", "note": "Can't Submit"},
-        {"name": "RIAN DELON", "note": "ហាម Reprint"},
-        {"name": "E5839832", "note": "ហាម Reprint"},
-        {"name": "ZHANG BINGFENG", "note": "ហាម Reprint"},
-        {"name": "EH8060462", "note": "ហាម Reprint"},
-        {"name": "QIN XIONG", "note": "ហាម Reprint"},
-        {"name": "EH5069814", "note": "ហាម Reprint"},
         {"name": "CRUZ MORALES NICOLE", "note": "(ម្នាក់នេះអ្នកយកព័ត៍មាន)"},
         {"name": "XE82045", "note": "(ម្នាក់នេះអ្នកយកព័ត៍មាន)"},
         {"name": "FD7405215", "note": "(​ អ្នកសារព័ត៌មាន )"},
@@ -147,6 +155,7 @@
         "01011990"
     ]
 }
+
 
 
 
