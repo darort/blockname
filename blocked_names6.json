@@ -33,6 +33,8 @@
         {"name": "EF9223905", "note": "ភ្ងៀវ CANCEL តែចេញកាត WANG JINDUI CBM-317 S-BAO-322"},
         {"name": "WANG JINDUI", "note": "ភ្ងៀវ CANCEL តែចេញកាត EF9223905 CBM-317 S-BAO-322"},
         {"name": "========================", "note": "=========================="},
+        {"name": "WANG LEI", "note": "(FAKE VISA EK1934057)"},
+        {"name": "EK1934057", "note": "(FAKE VISA WANG LEI)"},
         {"name": "ZHANG XIAOXU", "note": "(FAKE VISA)"},
         {"name": "HOSSEN MARUF", "note": "(ម្នាក់នេះកែលេខ ចេញចូល វីសាបង)"},
         {"name": "ABU SALMA", "note": "(CARD កាត់តបង (TNTO))"},
@@ -155,6 +157,7 @@
         "01011990"
     ]
 }
+
 
 
 
