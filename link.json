@@ -1,6 +1,6 @@
 {
   "enabled": false,
-  "buttonText": "Cloud",
+  "buttonText": "KPS",
   "buttonUrl": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
 
   "buttonStyle": {
@@ -13,13 +13,14 @@
   },
 
   "label": {
-    "text": "Cloud",
+    "text": "KPS",
     "clickable": true,
     "labelLink": "https://cloud.kingwin.app/s/MdTjkkkjjFTQdPn",
     "color": "#007bff",
     "disableTextClick": false
   }
 }
+
 
 
 
