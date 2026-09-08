@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      8.5
-// @description  AUTOFILL v8.5 - #RT - Live code suggestion hints, right-click menu toggle, URL isolation, 1-PC lock.
+// @version      8.6
+// @description  AUTOFILL v8.6 - #RT - Smart completion hints on all fields (4+ chars), right-click restore, URL isolation.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,7 +23,7 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '8.5';
+    const CURRENT_VERSION = '8.6';
     const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} - #RT`;
 
     // Live Cloudflare Worker
@@ -362,13 +362,8 @@
     // 7. REACT / VUE DOM BYPASS
     // =========================================================================
     function setNativeValue(element, value) {
-        if (!element || document.activeElement === element) {
-            if (element) {
-                element.value = value;
-                ['input', 'change'].forEach(evt => element.dispatchEvent(new Event(evt, { bubbles: true })));
-            }
-            return;
-        }
+        if (!element) return;
+        
         const proto = Object.getPrototypeOf(element);
         const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
 
@@ -476,7 +471,7 @@
     }
 
     // =========================================================================
-    // 9. LIVE SEARCH AUTO-SUGGESTION HINT POPUP ENGINE
+    // 9. SMART COMPLETION HINTS (4+ CHARS STRICT FILTER)
     // =========================================================================
     let hintPopupEl = null;
 
@@ -485,12 +480,12 @@
         hintPopupEl = document.createElement('div');
         hintPopupEl.id = 'af-hint-suggestion-box';
         Object.assign(hintPopupEl.style, {
-            position: 'fixed',
+            position: 'absolute',
             background: '#090d16',
             border: '1px solid #0284c7',
             borderRadius: '8px',
             padding: '6px',
-            boxShadow: '0 12px 30px rgba(0,0,0,0.7)',
+            boxShadow: '0 14px 35px rgba(0,0,0,0.75)',
             zIndex: '2147483647',
             display: 'none',
             fontFamily: 'system-ui, sans-serif',
@@ -506,14 +501,12 @@
         if (hintPopupEl) hintPopupEl.style.display = 'none';
     }
 
-    function getMatchesForInput(targetInput, query) {
+    function getMatchesForInput(query) {
         if (!isActivated) return [];
         const cleanQ = (query || '').trim().toLowerCase();
-        const inputId = (targetInput.id || '').toLowerCase();
-        const inputName = (targetInput.name || '').toLowerCase();
-        const isLineCodeField = inputId.includes('line_code') || inputName.includes('line_code') || inputId.includes('code');
 
-        if (cleanQ.length < 2 && !isLineCodeField) return [];
+        // STRICT FILTER: If text is shorter than 4 characters, DO NOT show hints!
+        if (cleanQ.length < 4) return [];
 
         const profiles = getProfiles();
         const matches = [];
@@ -526,32 +519,40 @@
                 if (r.type !== 'fill' || !r.value) continue;
                 const rVal = String(r.value).trim();
                 const rValLower = rVal.toLowerCase();
-                const rSel = (r.selector || '').toLowerCase();
 
-                const selectorMatchesField = (inputId && rSel.includes(inputId)) || (inputName && rSel.includes(inputName));
-                const textMatches = cleanQ.length >= 1 && rValLower.includes(cleanQ);
+                // If user has already typed the complete value, hide hint
+                if (cleanQ === rValLower) continue;
 
-                if (textMatches || (isLineCodeField && selectorMatchesField && cleanQ.length >= 1 && rValLower.includes(cleanQ))) {
+                // "Nearly correct" condition: starts with what user is typing (e.g. V-QZT -> V-QZT-196)
+                const isPrefix = rValLower.startsWith(cleanQ);
+                const isCloseSubstring = cleanQ.length >= 5 && rValLower.includes(cleanQ);
+
+                if (isPrefix || isCloseSubstring) {
                     const key = `${rVal}__${profileName}`;
                     if (!seen.has(key)) {
                         seen.add(key);
                         matches.push({
                             value: rVal,
                             profileName: profileName,
-                            exactFieldMatch: selectorMatchesField
+                            isPrefix: isPrefix,
+                            matchLength: cleanQ.length
                         });
                     }
                 }
             }
         }
 
-        // Sort: Exact field matches first, then alphabetically
-        return matches.sort((a, b) => (b.exactFieldMatch ? 1 : 0) - (a.exactFieldMatch ? 1 : 0)).slice(0, 8);
+        // Sort: Prefix matches first, then shorter string length
+        return matches.sort((a, b) => {
+            if (a.isPrefix && !b.isPrefix) return -1;
+            if (!a.isPrefix && b.isPrefix) return 1;
+            return a.value.length - b.value.length;
+        }).slice(0, 8);
     }
 
     function renderHintsForInput(targetInput) {
         const q = targetInput.value;
-        const matches = getMatchesForInput(targetInput, q);
+        const matches = getMatchesForInput(q);
 
         if (matches.length === 0) {
             hideHintPopup();
@@ -561,10 +562,12 @@
         const popup = createHintPopup();
         popup.innerHTML = `
             <div style="padding:4px 8px; font-size:10px; color:#94a3b8; border-bottom:1px solid #1e293b; margin-bottom:4px; display:flex; justify-content:space-between;">
-                <span>💡 STORED VALUE HINTS</span>
+                <span>💡 NEARLY COMPLETED CODES</span>
                 <span style="color:#38bdf8; font-family:monospace;">${matches.length} found</span>
             </div>
         `;
+
+        const cleanQ = q.trim();
 
         matches.forEach(item => {
             const row = document.createElement('div');
@@ -580,17 +583,26 @@
                 marginBottom: '3px'
             });
 
+            // Visual Highlight: typed prefix in cyan, rest in bold white!
+            let labelHtml = '';
+            if (item.isPrefix) {
+                const typedPart = item.value.slice(0, cleanQ.length);
+                const remainingPart = item.value.slice(cleanQ.length);
+                labelHtml = `<span style="color:#38bdf8;">${typedPart}</span><span style="color:#ffffff; font-weight:800;">${remainingPart}</span>`;
+            } else {
+                labelHtml = `<span style="color:#ffffff; font-weight:700;">${item.value}</span>`;
+            }
+
             row.innerHTML = `
-                <span style="font-weight:700; color:#38bdf8; font-family:monospace;">${item.value}</span>
-                <span style="font-size:10px; background:#0284c722; color:#38bdf8; border:1px solid #0284c744; padding:1px 6px; border-radius:3px; font-family:sans-serif;">Profile: ${item.profileName}</span>
+                <span style="font-family:monospace; font-size:12px;">${labelHtml}</span>
+                <span style="font-size:10px; background:#0284c722; color:#38bdf8; border:1px solid #0284c744; padding:1px 6px; border-radius:3px; font-family:sans-serif; white-space:nowrap;">Profile: ${item.profileName}</span>
             `;
 
             row.onmouseenter = () => row.style.background = '#0284c733';
             row.onmouseleave = () => row.style.background = '#1e293b55';
 
             row.onmousedown = (e) => {
-                e.preventDefault(); // Prevents input from losing focus prematurely
-                targetInput.value = item.value;
+                e.preventDefault();
                 setNativeValue(targetInput, item.value);
                 hideHintPopup();
                 showToast(`Filled "${item.value}" (from ${item.profileName})`, 2000);
@@ -606,16 +618,16 @@
         popup.style.display = 'block';
     }
 
-    // Attach Live Input & Focus Watchers
+    // Attach to all typing elements (inputs and textareas)
     document.addEventListener('input', (e) => {
-        if (e.target && e.target.matches('input[type="text"], input:not([type]), textarea')) {
+        if (e.target && e.target.matches('input[type="text"], input[type="search"], input:not([type]), textarea')) {
             renderHintsForInput(e.target);
         }
     }, true);
 
     document.addEventListener('focusin', (e) => {
-        if (e.target && e.target.matches('input[type="text"], input:not([type]), textarea')) {
-            if (e.target.value.trim().length >= 2 || (e.target.id && e.target.id.includes('line_code'))) {
+        if (e.target && e.target.matches('input[type="text"], input[type="search"], input:not([type]), textarea')) {
+            if (e.target.value.trim().length >= 4) {
                 renderHintsForInput(e.target);
             }
         }
@@ -1254,10 +1266,8 @@
             return div;
         };
 
-        // Header Title
         contextMenu.appendChild(makeItem(`⚡ ${DISPLAY_TITLE}`, () => {}, true));
 
-        // Direct Toggle Button: Shows immediately at top
         contextMenu.appendChild(makeItem(
             curMode === 'expanded' ? '✕ Hide Top Bar (Alt+H)' : '👁️ Open Top Bar (Alt+H)',
             () => {
@@ -1295,7 +1305,6 @@
         document.documentElement.appendChild(contextMenu);
     }
 
-    // Right-click triggers on any form field or toolbar element
     window.addEventListener('contextmenu', (e) => {
         if (e.shiftKey) return;
         if (e.target.matches('input, select, textarea, button, label, form, #pro-autofill-topbar, #pro-autofill-topbar *')) {
