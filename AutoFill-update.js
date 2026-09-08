@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         AUTOFILL v7.5 #RT
+// @name         AUTOFILL v7.6 #RT
 // @namespace    https://tampermonkey.net/
-// @version      7.5
-// @description  AUTOFILL v7.5 #RT - Persistent hidden state, direct GitHub raw update link, 1-PC Cloudflare lock.
+// @version      7.6
+// @description  AUTOFILL v7.6 #RT - Auto-unhides top bar on new version release, 1-PC lock, GitHub updater.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,13 +23,13 @@
     // =========================================================================
     // 0. CONFIGURATION & REPOSITORY LINKS
     // =========================================================================
-    const CURRENT_VERSION = '7.5';
+    const CURRENT_VERSION = '7.6';
 
     // Live Cloudflare Worker
     const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
     const LICENSE_API_URL = RAW_API_URL.replace(/\/+$/, '');
 
-    // Your Direct GitHub Raw Update URL
+    // GitHub Raw Update URL
     const GITHUB_RAW_SCRIPT_URL = 'https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js';
 
     // Storage Keys
@@ -38,6 +38,7 @@
     const STORAGE_UI_STATE = 'af_ui_state'; // 'expanded' | 'hidden'
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
+    const STORAGE_NOTIFIED_VERSION = 'af_last_notified_update_version';
 
     let isActivated = false;
     let currentActiveLicense = GM_getValue(STORAGE_LICENSE, '');
@@ -52,7 +53,7 @@
             const ctx = canvas.getContext('2d');
             ctx.textBaseline = 'top';
             ctx.font = "14px 'Arial'";
-            ctx.fillText("RT-AUTOFILL-v75", 2, 2);
+            ctx.fillText("RT-AUTOFILL-v76", 2, 2);
             const rawHash = btoa(canvas.toDataURL() + screen.width + 'x' + screen.height + navigator.hardwareConcurrency);
             const cleanHash = rawHash.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
 
@@ -87,7 +88,7 @@
                 }
             },
             onerror: function () {
-                callback(false, 'Cannot reach Cloudflare. Check internet.');
+                callback(false, 'Cannot reach Cloudflare. Check connection.');
             },
             ontimeout: function () {
                 callback(false, 'Cloudflare connection timed out.');
@@ -96,7 +97,7 @@
     }
 
     // =========================================================================
-    // 3. LIVE GITHUB AUTO-UPDATE CHECKER
+    // 3. GITHUB UPDATE CHECKER & ONE-TIME ALERT DISPATCHER
     // =========================================================================
     function compareVersions(remote, current) {
         const rParts = remote.split('.').map(Number);
@@ -273,8 +274,6 @@
         GM_setValue(STORAGE_DOMAIN_ACTIVE, map);
     }
     function getActiveProfileName() { return getDomainActiveMap()[window.location.hostname] || ''; }
-    
-    // UI State defaults to 'expanded', but once user closes (X), stays 'hidden' permanently
     function getUIState() { return GM_getValue(STORAGE_UI_STATE, 'expanded'); }
     function setUIState(state) { GM_setValue(STORAGE_UI_STATE, state); }
 
@@ -371,7 +370,7 @@
                     }
                 });
             } catch (err) {
-                console.error('[AUTOFILL v7.5 Error]', err);
+                console.error('[AUTOFILL v7.6 Error]', err);
             }
         });
         return count;
@@ -397,7 +396,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `autofill_v75_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `autofill_v76_backup_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -538,7 +537,7 @@
     }
 
     // =========================================================================
-    // 9. TOP TOOLBAR UI (Remembers Hidden State)
+    // 9. TOP TOOLBAR UI (With Smart Update Popup Override)
     // =========================================================================
     let topToolbar, selectEl, updateBadgeEl, observer;
 
@@ -588,7 +587,7 @@
             background: '#090d16',
             color: '#f8fafc',
             borderBottom: '1px solid #1e293b',
-            display: 'none', // Controlled by applySavedUIMode()
+            display: 'none',
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 16px',
@@ -619,7 +618,7 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:8px;">
-                <button id="af-btn-update" style="display:none; background:#22c55e; color:#0f172a; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:700; font-size:11px; animation: afPulse 1.5s infinite;" title="Click to update immediately">
+                <button id="af-btn-update" style="display:none; background:#22c55e; color:#0f172a; border:none; border-radius:4px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:11px; animation: afPulse 1.4s infinite;" title="Click to update immediately via Tampermonkey">
                     🚀 Update Available
                 </button>
 
@@ -632,8 +631,8 @@
         const styleSheet = document.createElement('style');
         styleSheet.textContent = `
             @keyframes afPulse {
-                0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-                70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+                0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.8); }
+                70% { box-shadow: 0 0 0 7px rgba(34, 197, 94, 0); }
                 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
             }
         `;
@@ -659,7 +658,6 @@
         topToolbar.querySelector('#af-btn-import').onclick = importProfilesFromFile;
         topToolbar.querySelector('#af-license-badge').onclick = () => openLicenseManagerModal();
         
-        // When clicking (X), save 'hidden' so it stays hidden on refresh
         topToolbar.querySelector('#af-btn-hide').onclick = () => {
             setViewMode('hidden');
             showToast('Bar hidden. Press Alt+H to show.');
@@ -676,7 +674,7 @@
         applySavedUIMode();
         updateUI();
 
-        // Check for updates
+        // Check for updates & auto-unhide if new version released
         checkGitHubForUpdates((newVer) => {
             if (updateBadgeEl) {
                 updateBadgeEl.style.display = 'inline-block';
@@ -684,6 +682,15 @@
                 updateBadgeEl.onclick = () => {
                     window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
                 };
+
+                // ONE-TIME POPUP ALERT: If user hasn't been alerted for this exact version yet
+                const lastNotified = GM_getValue(STORAGE_NOTIFIED_VERSION, '');
+                if (lastNotified !== newVer) {
+                    // Unhide and pop up the bar automatically on page refresh
+                    setViewMode('expanded');
+                    GM_setValue(STORAGE_NOTIFIED_VERSION, newVer);
+                    showToast(`🚀 Update Alert: AUTOFILL v${newVer} is available! Click 'Update Available' to install.`);
+                }
             }
         });
     }
@@ -743,16 +750,16 @@
             background: '#1e293b',
             color: '#38bdf8',
             border: '1px solid #0284c7',
-            padding: '5px 12px',
+            padding: '6px 14px',
             borderRadius: '6px',
             fontSize: '11px',
             fontFamily: 'system-ui, sans-serif',
             zIndex: '2147483647',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.35)',
+            boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
             pointerEvents: 'none'
         });
         document.documentElement.appendChild(toast);
-        setTimeout(() => toast.remove(), 2000);
+        setTimeout(() => toast.remove(), 3500);
     }
 
     // =========================================================================
@@ -830,7 +837,6 @@
             contextMenu.appendChild(makeItem('📥 Import Backup (JSON)', importProfilesFromFile));
             contextMenu.appendChild(makeDivider());
             
-            // Toggle Top Bar Option
             const cur = getUIState();
             contextMenu.appendChild(makeItem(cur === 'expanded' ? '✕ Hide Top Bar' : '👁️ Show Top Bar', () => {
                 setViewMode(cur === 'expanded' ? 'hidden' : 'expanded');
@@ -855,7 +861,6 @@
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') removeContextMenu();
         
-        // Shortcut Alt + H toggles between Show and Hide, saving the choice
         if (e.altKey && e.key.toLowerCase() === 'h') {
             if (!isActivated) {
                 openLicenseManagerModal(`Activate this device to use AUTOFILL v${CURRENT_VERSION} #RT.`, true);
