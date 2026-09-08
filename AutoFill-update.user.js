@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      8.2
-// @description  AUTOFILL v8.2 - #RT - Direct Lightning Autofill CSV importer, 1-PC lock, auto-updater.
+// @version      8.3
+// @description  AUTOFILL v8.3 - #RT - Strict URL path isolation, smart site-matching, 1-PC lock, CSV importer.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,7 +23,7 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '8.2';
+    const CURRENT_VERSION = '8.3';
     const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} - #RT`;
 
     // Live Cloudflare Worker
@@ -35,7 +35,7 @@
 
     // Storage Keys
     const STORAGE_PROFILES = 'af_profiles_db';
-    const STORAGE_DOMAIN_ACTIVE = 'af_domain_active_map';
+    const STORAGE_PAGE_ACTIVE = 'af_page_active_map'; // Path-specific map
     const STORAGE_UI_STATE = 'af_ui_state';
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
@@ -291,17 +291,76 @@
     }
 
     // =========================================================================
-    // 6. STORAGE ACCESSORS
+    // 6. STRICT URL & PAGE PATH SCOPING ENGINE
     // =========================================================================
+    function getPageKey() {
+        // e.g., "kingwinagency.net/workpermit/create/self"
+        return (window.location.host + window.location.pathname).replace(/\/+$/, '').toLowerCase();
+    }
+
+    function isProfileMatchingCurrentPage(profile) {
+        if (!profile) return false;
+        const currentKey = getPageKey();
+        const currentHost = window.location.hostname.toLowerCase();
+
+        // 1. Path-specific site check
+        if (profile.site) {
+            const cleanSite = profile.site.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+            if (cleanSite.includes('/')) {
+                return currentKey.startsWith(cleanSite) || cleanSite.startsWith(currentKey) || currentKey.includes(cleanSite);
+            }
+            return currentHost === cleanSite || currentHost.endsWith('.' + cleanSite);
+        }
+
+        // 2. Domain-only check (if site is not recorded)
+        if (profile.domain) {
+            const cleanDomain = profile.domain.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+            if (cleanDomain.includes('/')) {
+                return currentKey.includes(cleanDomain);
+            }
+            return currentHost === cleanDomain || currentHost.endsWith('.' + cleanDomain);
+        }
+
+        return false;
+    }
+
     function getProfiles() { return GM_getValue(STORAGE_PROFILES, {}); }
     function saveProfiles(data) { GM_setValue(STORAGE_PROFILES, data); }
-    function getDomainActiveMap() { return GM_getValue(STORAGE_DOMAIN_ACTIVE, {}); }
-    function setDomainActiveProfile(name) {
-        const map = getDomainActiveMap();
-        map[window.location.hostname] = name;
-        GM_setValue(STORAGE_DOMAIN_ACTIVE, map);
+
+    function getPageActiveMap() { return GM_getValue(STORAGE_PAGE_ACTIVE, {}); }
+    function setPageActiveProfile(name) {
+        const map = getPageActiveMap();
+        map[getPageKey()] = name;
+        GM_setValue(STORAGE_PAGE_ACTIVE, map);
     }
-    function getActiveProfileName() { return getDomainActiveMap()[window.location.hostname] || ''; }
+
+    function getActiveProfileName() {
+        const map = getPageActiveMap();
+        const currentKey = getPageKey();
+        const profiles = getProfiles();
+
+        // Check if user specifically assigned a profile to this exact link path
+        if (map[currentKey]) {
+            const chosen = map[currentKey];
+            if (profiles[chosen] && isProfileMatchingCurrentPage(profiles[chosen])) {
+                return chosen;
+            }
+        }
+
+        // Automatic fallback: check if any profile's registered site matches this URL
+        for (const [pName, pData] of Object.entries(profiles)) {
+            if (pData.site) {
+                const clean = pData.site.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
+                if (clean && currentKey.includes(clean)) {
+                    return pName;
+                }
+            }
+        }
+
+        // Do not guess or default on unfamiliar websites/pages
+        return '';
+    }
+
     function getUIState() { return GM_getValue(STORAGE_UI_STATE, 'expanded'); }
     function setUIState(state) { GM_setValue(STORAGE_UI_STATE, state); }
 
@@ -407,12 +466,15 @@
     function triggerAutoFill() {
         if (!isActivated) return 0;
         const activeName = getActiveProfileName();
-        if (!activeName) return 0;
+        if (!activeName) return 0; // Completely blocks filling if no profile is authorized for this link
+
         const profile = getProfiles()[activeName];
-        if (profile && profile.rules && profile.rules.length > 0) {
-            return applyProfileRules(profile.rules);
-        }
-        return 0;
+        if (!profile || !profile.rules || profile.rules.length === 0) return 0;
+
+        // Strict verification: ensure profile matches current URL
+        if (!isProfileMatchingCurrentPage(profile)) return 0;
+
+        return applyProfileRules(profile.rules);
     }
 
     // =========================================================================
@@ -454,7 +516,7 @@
     function buildSelectorFromLightningName(nameStr) {
         const raw = cleanRuleString(nameStr);
         const snake = raw.replace(/[\s\-]+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
-        
+
         const selectors = [
             `[name="${snake}"]`,
             `#${snake}`,
@@ -522,6 +584,7 @@
             const domain = p.site ? p.site.split('/')[0] : window.location.hostname;
             out[p.name] = {
                 domain: domain || window.location.hostname,
+                site: p.site || '', // Preserves exact link path
                 rules: p.rules
             };
         }
@@ -549,7 +612,6 @@
         if (!isActivated) return openLicenseManagerModal('Activate to import profiles.', true);
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
-        // Accepts both standard JSON backups and Lightning CSV exports
         fileInput.accept = '.json, .csv, application/json, text/csv';
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
@@ -559,16 +621,14 @@
                 const textContent = event.target.result;
                 let imported = null;
 
-                // 1. Try Lightning CSV Detection
                 if (file.name.endsWith('.csv') || textContent.includes('### AUTOFILL PROFILES ###')) {
                     try {
                         imported = parseLightningCSV(textContent);
-                    } catch (err) {
+                    } catch {
                         alert('Could not parse Lightning Autofill CSV file.');
                         return;
                     }
                 } else {
-                    // 2. Standard JSON Backup
                     try {
                         imported = JSON.parse(textContent);
                     } catch {
@@ -584,7 +644,7 @@
                     showToast(`Imported ${Object.keys(imported).length} profile(s) successfully!`);
                     triggerAutoFill();
                 } else {
-                    alert('No valid profiles found in the selected file.');
+                    alert('No valid profiles found in file.');
                 }
             };
             reader.readAsText(file);
@@ -623,6 +683,9 @@
                     <div style="padding:12px 16px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
                         <span style="font-weight:700; font-size:14px; color:#38bdf8;">✏️ Edit: ${profileName}</span>
                         <button id="af-modal-close" style="background:transparent; border:none; color:#94a3b8; font-size:16px; cursor:pointer;">✕</button>
+                    </div>
+                    <div style="padding:6px 16px; background:#1e293b; font-size:11px; color:#94a3b8; border-bottom:1px solid #334155;">
+                        Bound to: <span style="color:#38bdf8; font-family:monospace;">${profile.site || profile.domain || 'All pages'}</span>
                     </div>
                     <div id="af-modal-list" style="padding:14px 16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:8px;"></div>
                     <div style="padding:12px 16px; border-top:1px solid #334155; display:flex; justify-content:space-between; align-items:center; background:#0b1120;">
@@ -699,39 +762,54 @@
     }
 
     // =========================================================================
-    // 11. TOP TOOLBAR UI
+    // 11. TOP TOOLBAR UI (Smart Path Grouping)
     // =========================================================================
     let topToolbar, selectEl, updateSlotEl, observer;
 
     function handleSaveCurrent() {
         if (!isActivated) return openLicenseManagerModal('Activate to save forms.', true);
-        const current = getActiveProfileName();
+        const current = getActiveProfileName() || selectEl.value;
         if (!current || current === '__CREATE_NEW__') {
-            alert('Select or create a profile first.');
+            alert('Please select or create a profile first.');
             return;
         }
+
+        const currentSitePath = (window.location.host + window.location.pathname).replace(/\/+$/, '');
         const capturedRules = captureCurrentForm(current);
         const profiles = getProfiles();
-        profiles[current] = { domain: window.location.hostname, rules: capturedRules };
+
+        // Locked strictly to this path
+        profiles[current] = {
+            domain: window.location.hostname,
+            site: currentSitePath,
+            rules: capturedRules
+        };
+
         saveProfiles(profiles);
-        setDomainActiveProfile(current);
+        setPageActiveProfile(current);
         showToast(`Saved to "${current}" (${capturedRules.length} fields)`);
         updateUI();
     }
 
     function handleCreateNewProfile() {
         if (!isActivated) return openLicenseManagerModal('Activate to create profiles.', true);
-        const newName = prompt('Enter new profile name (e.g. A, B, Work Permit):');
+        const newName = prompt('Enter new profile name for this page:');
         if (newName && newName.trim()) {
             const clean = newName.trim();
+            const currentSitePath = (window.location.host + window.location.pathname).replace(/\/+$/, '');
             const profiles = getProfiles();
+
             if (!profiles[clean]) {
-                profiles[clean] = { domain: window.location.hostname, rules: captureCurrentForm(clean) };
+                profiles[clean] = {
+                    domain: window.location.hostname,
+                    site: currentSitePath,
+                    rules: captureCurrentForm(clean)
+                };
                 saveProfiles(profiles);
             }
-            setDomainActiveProfile(clean);
+            setPageActiveProfile(clean);
             updateUI();
-            showToast(`Profile "${clean}" ready!`);
+            showToast(`Profile "${clean}" ready for this page!`);
         }
     }
 
@@ -767,7 +845,7 @@
                     ⚡ <span>${DISPLAY_TITLE}</span>
                 </span>
 
-                <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:130px;"></select>
+                <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:140px;"></select>
                 <button id="af-btn-new" style="background:#334155; color:#38bdf8; border:1px solid #475569; border-radius:4px; padding:3px 8px; cursor:pointer; font-weight:600;" title="Create New Profile">➕ New</button>
                 <button id="af-btn-save" style="background:#16a34a; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Save/Sync Current Form">💾 Save</button>
                 <button id="af-btn-fill" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Fill Target Form">⚡ Fill</button>
@@ -811,23 +889,26 @@
             showToast(`Filled ${c} field(s)`);
         };
         topToolbar.querySelector('#af-btn-edit').onclick = () => {
-            const act = getActiveProfileName();
+            const act = getActiveProfileName() || selectEl.value;
             if (act) openProfileEditor(act);
             else alert('Select a profile first.');
         };
         topToolbar.querySelector('#af-btn-backup').onclick = exportProfilesToFile;
         topToolbar.querySelector('#af-btn-import').onclick = importProfilesFromFile;
         topToolbar.querySelector('#af-license-badge').onclick = () => openLicenseManagerModal();
-        
+
         topToolbar.querySelector('#af-btn-hide').onclick = () => {
             setViewMode('hidden');
             showToast('Bar hidden. Press Alt+H to show.');
         };
 
         selectEl.onchange = () => {
-            if (selectEl.value === '__CREATE_NEW__') handleCreateNewProfile();
-            else {
-                setDomainActiveProfile(selectEl.value);
+            if (selectEl.value === '__CREATE_NEW__') {
+                handleCreateNewProfile();
+            } else if (selectEl.value === '') {
+                setPageActiveProfile('');
+            } else {
+                setPageActiveProfile(selectEl.value);
                 triggerAutoFill();
             }
         };
@@ -835,7 +916,7 @@
         applySavedUIMode();
         updateUI();
 
-        // Check for updates & render either "Upgrade to vX.X" or "✓ UP TO DATE"
+        // GitHub update detector
         checkGitHubForUpdates((hasUpdate, remoteVer) => {
             if (!updateSlotEl) return;
             if (hasUpdate) {
@@ -891,24 +972,58 @@
         const active = getActiveProfileName();
 
         selectEl.innerHTML = '';
-        if (names.length === 0) {
-            const emptyOpt = document.createElement('option');
-            emptyOpt.value = '';
-            emptyOpt.textContent = '(No Profiles)';
-            selectEl.appendChild(emptyOpt);
-        } else {
+
+        // Safe Default Option: No profile will run unless authorized
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.textContent = active ? '-- None / Off --' : '(No Profile - Safe)';
+        if (!active) defaultOpt.selected = true;
+        selectEl.appendChild(defaultOpt);
+
+        if (names.length > 0) {
+            const pageMatching = [];
+            const otherProfiles = [];
+
             names.forEach(name => {
-                const opt = document.createElement('option');
-                opt.value = name;
-                opt.textContent = name;
-                if (name === active) opt.selected = true;
-                selectEl.appendChild(opt);
+                if (isProfileMatchingCurrentPage(profiles[name])) {
+                    pageMatching.push(name);
+                } else {
+                    otherProfiles.push(name);
+                }
             });
+
+            // Group 1: Strictly matches this specific page/link
+            if (pageMatching.length > 0) {
+                const groupMatch = document.createElement('optgroup');
+                groupMatch.label = '📍 For This Link / Page';
+                pageMatching.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = `✓ ${name}`;
+                    if (name === active) opt.selected = true;
+                    groupMatch.appendChild(opt);
+                });
+                selectEl.appendChild(groupMatch);
+            }
+
+            // Group 2: Belongs to other links or websites
+            if (otherProfiles.length > 0) {
+                const groupOther = document.createElement('optgroup');
+                groupOther.label = '🌐 Other Saved Profiles';
+                otherProfiles.forEach(name => {
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = name;
+                    if (name === active) opt.selected = true;
+                    groupOther.appendChild(opt);
+                });
+                selectEl.appendChild(groupOther);
+            }
         }
 
         const newOpt = document.createElement('option');
         newOpt.value = '__CREATE_NEW__';
-        newOpt.textContent = '+ Create New...';
+        newOpt.textContent = '➕ Create New Profile...';
         newOpt.style.fontWeight = 'bold';
         newOpt.style.color = '#38bdf8';
         selectEl.appendChild(newOpt);
@@ -1000,7 +1115,7 @@
 
             names.forEach(name => {
                 contextMenu.appendChild(makeItem(`${name === active ? '✓ ' : '   '}${name}`, () => {
-                    setDomainActiveProfile(name);
+                    setPageActiveProfile(name);
                     updateUI();
                     triggerAutoFill();
                 }));
@@ -1011,7 +1126,7 @@
             contextMenu.appendChild(makeItem('📦 Export Backup (JSON)', exportProfilesToFile));
             contextMenu.appendChild(makeItem('📥 Import Backup (JSON/CSV)', importProfilesFromFile));
             contextMenu.appendChild(makeDivider());
-            
+
             const cur = getUIState();
             contextMenu.appendChild(makeItem(cur === 'expanded' ? '✕ Hide Top Bar' : '👁️ Show Top Bar', () => {
                 setViewMode(cur === 'expanded' ? 'hidden' : 'expanded');
@@ -1035,7 +1150,7 @@
     window.addEventListener('click', removeContextMenu);
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') removeContextMenu();
-        
+
         if (e.altKey && e.key.toLowerCase() === 'h') {
             if (!isActivated) {
                 openLicenseManagerModal(`Activate this device to use ${DISPLAY_TITLE}.`, true);
