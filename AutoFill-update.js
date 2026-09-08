@@ -1,94 +1,138 @@
 // ==UserScript==
-// @name         Pro Autofill - Top Toolbar & Device Lock Engine
+// @name         AUTOFILL v7.5 #RT
 // @namespace    https://tampermonkey.net/
-// @version      6.0
-// @description  Top-docked toolbar, profile sync, visual editor, JSON backup, and 1-PC device-locked activation.
+// @version      7.5
+// @description  AUTOFILL v7.5 #RT - Persistent hidden state, direct GitHub raw update link, 1-PC Cloudflare lock.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @grant        GM_registerMenuCommand
 // @grant        GM_xmlhttpRequest
+// @connect      autofill-keys.darort07.workers.dev
+// @connect      raw.githubusercontent.com
+// @connect      githubusercontent.com
 // @connect      *
 // @run-at       document-idle
+// @updateURL    https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js
+// @downloadURL  https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js
 // ==/UserScript==
 
 (function () {
     'use strict';
 
     // =========================================================================
-    // 0. CONFIGURATION & ACTIVATION SERVER
-    // Replace with your Cloudflare Worker URL or backend API endpoint (Step 2)
+    // 0. CONFIGURATION & REPOSITORY LINKS
     // =========================================================================
-    const LICENSE_API_URL = 'https://YOUR_WORKER_SUBDOMAIN.workers.dev/verify'; // Set to '' for offline demo mode
+    const CURRENT_VERSION = '7.5';
+
+    // Live Cloudflare Worker
+    const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
+    const LICENSE_API_URL = RAW_API_URL.replace(/\/+$/, '');
+
+    // Your Direct GitHub Raw Update URL
+    const GITHUB_RAW_SCRIPT_URL = 'https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js';
 
     // Storage Keys
     const STORAGE_PROFILES = 'af_profiles_db';
     const STORAGE_DOMAIN_ACTIVE = 'af_domain_active_map';
-    const STORAGE_UI_STATE = 'af_ui_state'; // 'expanded' | 'minimized' | 'hidden'
+    const STORAGE_UI_STATE = 'af_ui_state'; // 'expanded' | 'hidden'
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
 
+    let isActivated = false;
+    let currentActiveLicense = GM_getValue(STORAGE_LICENSE, '');
+
     // =========================================================================
-    // 1. DEVICE FINGERPRINTING & HARDWARE BINDING
+    // 1. HARDWARE FINGERPRINT ENGINE
     // =========================================================================
     function getMachineFingerprint() {
         let machineId = GM_getValue(STORAGE_DEVICE_ID, null);
         if (!machineId) {
-            // Generate hardware fingerprint using canvas rendering, screen specs, and platform
             const canvas = document.createElement('canvas');
             const ctx = canvas.getContext('2d');
             ctx.textBaseline = 'top';
             ctx.font = "14px 'Arial'";
-            ctx.fillText("AF-SECURE-KEY", 2, 2);
+            ctx.fillText("RT-AUTOFILL-v75", 2, 2);
             const rawHash = btoa(canvas.toDataURL() + screen.width + 'x' + screen.height + navigator.hardwareConcurrency);
-            const cleanHash = rawHash.replace(/[^a-zA-Z0-9]/g, '').slice(-10).toUpperCase();
-            
+            const cleanHash = rawHash.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
+
             machineId = `PC-${cleanHash}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
             GM_setValue(STORAGE_DEVICE_ID, machineId);
         }
         return machineId;
     }
 
-    function checkActivationStatus(callback) {
-        const storedKey = GM_getValue(STORAGE_LICENSE, null);
+    // =========================================================================
+    // 2. CLOUDFLARE LICENSE NETWORK DISPATCHER
+    // =========================================================================
+    function callLicenseAPI(action, licenseKey, callback) {
         const machineId = getMachineFingerprint();
-
-        if (!storedKey) {
-            callback(false, 'No license registered on this machine.');
-            return;
-        }
-
-        // Offline / Demo fallback if no API server is provided yet
-        if (!LICENSE_API_URL || LICENSE_API_URL.includes('YOUR_WORKER')) {
-            callback(true, 'Local Demo Mode Active');
-            return;
-        }
 
         GM_xmlhttpRequest({
             method: 'POST',
             url: LICENSE_API_URL,
-            headers: { 'Content-Type': 'application/json' },
-            data: JSON.stringify({ licenseKey: storedKey, machineId: machineId }),
-            timeout: 7000,
+            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+            data: JSON.stringify({ action, licenseKey, machineId }),
+            timeout: 10000,
             onload: function (response) {
                 try {
                     const res = JSON.parse(response.responseText);
-                    if (res.status === 'valid') {
+                    if (response.status === 200 && (res.status === 'valid' || res.status === 'success')) {
                         callback(true, res.message);
                     } else {
-                        callback(false, res.message || 'Key already in use on another PC.');
+                        callback(false, res.message || `Server error (${response.status})`);
                     }
-                } catch (e) {
-                    callback(false, 'Failed to verify license with server.');
+                } catch {
+                    callback(false, 'Invalid response from Cloudflare.');
                 }
             },
             onerror: function () {
-                callback(false, 'License server unreachable.');
+                callback(false, 'Cannot reach Cloudflare. Check internet.');
+            },
+            ontimeout: function () {
+                callback(false, 'Cloudflare connection timed out.');
             }
         });
     }
 
-    function promptActivationModal(errorMsg = '') {
+    // =========================================================================
+    // 3. LIVE GITHUB AUTO-UPDATE CHECKER
+    // =========================================================================
+    function compareVersions(remote, current) {
+        const rParts = remote.split('.').map(Number);
+        const cParts = current.split('.').map(Number);
+        for (let i = 0; i < Math.max(rParts.length, cParts.length); i++) {
+            const r = rParts[i] || 0;
+            const c = cParts[i] || 0;
+            if (r > c) return true;
+            if (r < c) return false;
+        }
+        return false;
+    }
+
+    function checkGitHubForUpdates(onUpdateFound) {
+        GM_xmlhttpRequest({
+            method: 'GET',
+            url: `${GITHUB_RAW_SCRIPT_URL}?t=${Date.now()}`,
+            timeout: 8000,
+            onload: function (response) {
+                if (response.status === 200) {
+                    const match = response.responseText.match(/@version\s+([0-9.]+)/i);
+                    if (match && match[1]) {
+                        const remoteVersion = match[1].trim();
+                        if (compareVersions(remoteVersion, CURRENT_VERSION)) {
+                            onUpdateFound(remoteVersion);
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // =========================================================================
+    // 4. ACTIVATION MODAL
+    // =========================================================================
+    function openLicenseManagerModal(customNotice = '', isError = false) {
         const existing = document.getElementById('af-activate-modal');
         if (existing) existing.remove();
 
@@ -97,7 +141,7 @@
         Object.assign(modal.style, {
             position: 'fixed',
             inset: '0',
-            background: 'rgba(10, 15, 29, 0.85)',
+            background: 'rgba(10, 15, 29, 0.82)',
             backdropFilter: 'blur(4px)',
             display: 'flex',
             alignItems: 'center',
@@ -107,41 +151,118 @@
         });
 
         const machineId = getMachineFingerprint();
+        const storedKey = GM_getValue(STORAGE_LICENSE, '');
 
         modal.innerHTML = `
-            <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; width:440px; padding:24px; box-shadow:0 20px 50px rgba(0,0,0,0.7); color:#f8fafc; text-align:center;">
-                <div style="font-size:28px; margin-bottom:8px;">🔒</div>
-                <h3 style="margin:0 0 6px 0; font-size:18px; color:#38bdf8;">Activate Autofill Pro</h3>
-                <p style="font-size:12px; color:#94a3b8; margin:0 0 16px 0;">This license is locked to <b>1 PC</b>. Copying this key to another computer will be rejected.</p>
+            <div style="background:#0f172a; border:1px solid #334155; border-radius:12px; width:450px; padding:24px; box-shadow:0 24px 60px rgba(0,0,0,0.75); color:#f8fafc; position:relative;">
+                <button id="af-close-license-modal" style="position:absolute; top:14px; right:14px; background:transparent; border:none; color:#94a3b8; font-size:18px; cursor:pointer; padding:4px;" title="Close">✕</button>
                 
-                <div style="background:#1e293b; padding:8px; border-radius:6px; font-family:monospace; font-size:11px; color:#cbd5e1; margin-bottom:14px; border:1px solid #334155;">
-                    Device ID: <span style="color:#38bdf8;">${machineId}</span>
+                <div style="text-align:center; margin-bottom:14px;">
+                    <div style="font-size:26px; margin-bottom:4px;">⚡</div>
+                    <h3 style="margin:0; font-size:18px; color:#38bdf8; letter-spacing:0.5px;">AUTOFILL v${CURRENT_VERSION} #RT</h3>
+                    <p style="font-size:12px; color:#94a3b8; margin:4px 0 0 0;">Hardware Locked (1 PC) • Cloudflare Protected</p>
                 </div>
 
-                ${errorMsg ? `<div style="color:#ef4444; font-size:12px; margin-bottom:12px; background:#ef444415; padding:6px; border-radius:4px;">${errorMsg}</div>` : ''}
+                <div style="background:#1e293b; padding:10px; border-radius:6px; font-family:monospace; font-size:11px; margin-bottom:14px; border:1px solid #334155;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+                        <span style="color:#94a3b8;">Device ID:</span>
+                        <span style="color:#38bdf8; font-weight:700;">${machineId}</span>
+                    </div>
+                    <div style="display:flex; justify-content:space-between;">
+                        <span style="color:#94a3b8;">License Status:</span>
+                        <span style="color:${isActivated ? '#22c55e' : '#ef4444'}; font-weight:700;">${isActivated ? 'ACTIVATED' : 'NOT ACTIVATED'}</span>
+                    </div>
+                </div>
 
-                <input id="af-key-input" placeholder="Enter License Key (e.g. VIP-XXXX-XXXX)" 
-                       style="width:100%; box-sizing:border-box; padding:10px; background:#0b1120; border:1px solid #475569; border-radius:6px; color:#fff; font-family:monospace; font-size:13px; text-align:center; margin-bottom:16px; outline:none;" />
+                <div id="af-modal-msg" style="font-size:12px; margin-bottom:12px; display:${customNotice ? 'block' : 'none'}; background:${isError ? '#ef444415' : '#0284c722'}; color:${isError ? '#ef4444' : '#38bdf8'}; padding:8px; border-radius:4px; border:1px solid ${isError ? '#ef444444' : '#0284c744'};">
+                    ${customNotice}
+                </div>
 
-                <button id="af-btn-activate" style="width:100%; background:#0284c7; color:#fff; border:none; padding:10px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">
-                    Activate This PC
-                </button>
+                <label style="display:block; font-size:11px; color:#cbd5e1; margin-bottom:6px; font-weight:600;">ENTER LICENSE KEY:</label>
+                <input id="af-license-input" placeholder="e.g. VIP-DANETH-001" value="${storedKey}" 
+                       style="width:100%; box-sizing:border-box; padding:10px; background:#0b1120; border:1px solid #475569; border-radius:6px; color:#fff; font-family:monospace; font-size:13px; text-align:center; margin-bottom:14px; outline:none;" />
+
+                <div style="display:flex; flex-direction:column; gap:8px;">
+                    <button id="af-btn-activate-submit" style="background:#0284c7; color:#fff; border:none; padding:10px; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;">
+                        ${isActivated ? '🔄 Verify / Refresh Key' : '⚡ Activate This PC'}
+                    </button>
+
+                    ${isActivated ? `
+                        <button id="af-btn-deactivate-submit" style="background:#ef444422; color:#ef4444; border:1px solid #ef444455; padding:8px; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">
+                            🔓 Deactivate & Release Key
+                        </button>
+                    ` : ''}
+                </div>
             </div>
         `;
 
         document.documentElement.appendChild(modal);
 
-        modal.querySelector('#af-btn-activate').onclick = () => {
-            const val = modal.querySelector('#af-key-input').value.trim();
-            if (!val) return;
-            GM_setValue(STORAGE_LICENSE, val);
-            modal.remove();
-            initApp();
+        const msgBox = modal.querySelector('#af-modal-msg');
+        const inputKey = modal.querySelector('#af-license-input');
+
+        modal.querySelector('#af-close-license-modal').onclick = () => modal.remove();
+
+        modal.querySelector('#af-btn-activate-submit').onclick = () => {
+            const key = inputKey.value.trim();
+            if (!key) {
+                msgBox.textContent = 'Please enter a license key.';
+                msgBox.style.display = 'block';
+                return;
+            }
+
+            msgBox.textContent = 'Verifying with Cloudflare...';
+            msgBox.style.color = '#38bdf8';
+            msgBox.style.background = '#0284c722';
+            msgBox.style.border = '1px solid #0284c744';
+            msgBox.style.display = 'block';
+
+            callLicenseAPI('activate', key, (ok, msg) => {
+                if (ok) {
+                    GM_setValue(STORAGE_LICENSE, key);
+                    isActivated = true;
+                    currentActiveLicense = key;
+                    modal.remove();
+                    showToast('Activated successfully!');
+                    mountApp();
+                } else {
+                    isActivated = false;
+                    msgBox.textContent = `❌ ${msg}`;
+                    msgBox.style.color = '#ef4444';
+                    msgBox.style.background = '#ef444415';
+                    msgBox.style.border = '1px solid #ef444444';
+                    msgBox.style.display = 'block';
+                }
+            });
         };
+
+        const deactBtn = modal.querySelector('#af-btn-deactivate-submit');
+        if (deactBtn) {
+            deactBtn.onclick = () => {
+                if (!confirm('Deactivating will release this key so another PC can use it. Proceed?')) return;
+
+                msgBox.textContent = 'Releasing key in Cloudflare...';
+                msgBox.style.display = 'block';
+
+                callLicenseAPI('deactivate', storedKey, (ok, msg) => {
+                    if (ok) {
+                        GM_setValue(STORAGE_LICENSE, '');
+                        isActivated = false;
+                        currentActiveLicense = '';
+                        modal.remove();
+                        unmountApp();
+                        showToast('License released.');
+                    } else {
+                        msgBox.textContent = msg;
+                        msgBox.style.display = 'block';
+                    }
+                });
+            };
+        }
     }
 
     // =========================================================================
-    // 2. STORAGE ACCESSORS
+    // 5. STORAGE ACCESSORS
     // =========================================================================
     function getProfiles() { return GM_getValue(STORAGE_PROFILES, {}); }
     function saveProfiles(data) { GM_setValue(STORAGE_PROFILES, data); }
@@ -151,14 +272,14 @@
         map[window.location.hostname] = name;
         GM_setValue(STORAGE_DOMAIN_ACTIVE, map);
     }
-    function getActiveProfileName() {
-        return getDomainActiveMap()[window.location.hostname] || '';
-    }
+    function getActiveProfileName() { return getDomainActiveMap()[window.location.hostname] || ''; }
+    
+    // UI State defaults to 'expanded', but once user closes (X), stays 'hidden' permanently
     function getUIState() { return GM_getValue(STORAGE_UI_STATE, 'expanded'); }
     function setUIState(state) { GM_setValue(STORAGE_UI_STATE, state); }
 
     // =========================================================================
-    // 3. REACT / VUE / DOM BYPASS ENGINE
+    // 6. REACT / VUE DOM BYPASS
     // =========================================================================
     function setNativeValue(element, value) {
         if (!element || document.activeElement === element) return;
@@ -171,8 +292,8 @@
             element.value = value;
         }
 
-        ['input', 'change', 'blur'].forEach(eventType => {
-            element.dispatchEvent(new Event(eventType, { bubbles: true, cancelable: true }));
+        ['input', 'change', 'blur'].forEach(evt => {
+            element.dispatchEvent(new Event(evt, { bubbles: true, cancelable: true }));
         });
     }
 
@@ -181,14 +302,14 @@
         if (el.name) return `${el.tagName.toLowerCase()}[name="${CSS.escape(el.name)}"]`;
         if (el.getAttribute('placeholder')) return `${el.tagName.toLowerCase()}[placeholder="${CSS.escape(el.getAttribute('placeholder'))}"]`;
         if (el.className && typeof el.className === 'string') {
-            const firstClass = el.className.trim().split(/\s+/)[0];
-            if (firstClass && !firstClass.includes(':')) return `${el.tagName.toLowerCase()}.${CSS.escape(firstClass)}`;
+            const first = el.className.trim().split(/\s+/)[0];
+            if (first && !first.includes(':')) return `${el.tagName.toLowerCase()}.${CSS.escape(first)}`;
         }
         return el.tagName.toLowerCase();
     }
 
     // =========================================================================
-    // 4. FULL STATE CAPTURE & APPLY
+    // 7. FORM CAPTURE & APPLY
     // =========================================================================
     function captureCurrentForm(targetProfileName) {
         const profiles = getProfiles();
@@ -220,7 +341,7 @@
     }
 
     function applyProfileRules(rules) {
-        if (!rules || !Array.isArray(rules)) return 0;
+        if (!isActivated || !rules || !Array.isArray(rules)) return 0;
         let count = 0;
 
         rules.forEach(rule => {
@@ -250,13 +371,14 @@
                     }
                 });
             } catch (err) {
-                console.error('[Autofill Error]', rule.selector, err);
+                console.error('[AUTOFILL v7.5 Error]', err);
             }
         });
         return count;
     }
 
     function triggerAutoFill() {
+        if (!isActivated) return 0;
         const activeName = getActiveProfileName();
         if (!activeName) return 0;
         const profile = getProfiles()[activeName];
@@ -267,23 +389,24 @@
     }
 
     // =========================================================================
-    // 5. BACKUP & EXPORT/IMPORT
+    // 8. BACKUP, IMPORT & VISUAL PROFILE EDITOR
     // =========================================================================
     function exportProfilesToFile() {
-        const profiles = getProfiles();
-        const blob = new Blob([JSON.stringify(profiles, null, 2)], { type: 'application/json' });
+        if (!isActivated) return openLicenseManagerModal('Activate to export profiles.', true);
+        const blob = new Blob([JSON.stringify(getProfiles(), null, 2)], { type: 'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `autofill_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `autofill_v75_backup_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
         URL.revokeObjectURL(url);
-        showToast('Backup downloaded!');
+        showToast('Backup downloaded successfully!');
     }
 
     function importProfilesFromFile() {
+        if (!isActivated) return openLicenseManagerModal('Activate to import profiles.', true);
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = '.json,application/json';
@@ -308,10 +431,8 @@
         fileInput.click();
     }
 
-    // =========================================================================
-    // 6. VISUAL PROFILE EDITOR MODAL
-    // =========================================================================
     function openProfileEditor(profileName) {
+        if (!isActivated) return openLicenseManagerModal('Activate to edit profiles.', true);
         const profiles = getProfiles();
         const profile = profiles[profileName];
         if (!profile) return;
@@ -339,7 +460,7 @@
             modal.innerHTML = `
                 <div style="background:#0f172a; border:1px solid #334155; border-radius:10px; width:520px; max-width:92vw; max-height:85vh; display:flex; flex-direction:column; box-shadow:0 20px 40px rgba(0,0,0,0.6); color:#f8fafc;">
                     <div style="padding:12px 16px; border-bottom:1px solid #334155; display:flex; justify-content:space-between; align-items:center;">
-                        <span style="font-weight:700; font-size:14px; color:#38bdf8;">✏️ Edit Profile: ${profileName}</span>
+                        <span style="font-weight:700; font-size:14px; color:#38bdf8;">✏️ Edit: ${profileName}</span>
                         <button id="af-modal-close" style="background:transparent; border:none; color:#94a3b8; font-size:16px; cursor:pointer;">✕</button>
                     </div>
                     <div id="af-modal-list" style="padding:14px 16px; overflow-y:auto; flex:1; display:flex; flex-direction:column; gap:8px;"></div>
@@ -417,11 +538,12 @@
     }
 
     // =========================================================================
-    // 7. TOP TOOLBAR UI (Positioned below Bookmark Bar)
+    // 9. TOP TOOLBAR UI (Remembers Hidden State)
     // =========================================================================
-    let topToolbar, miniTab, selectEl;
+    let topToolbar, selectEl, updateBadgeEl, observer;
 
     function handleSaveCurrent() {
+        if (!isActivated) return openLicenseManagerModal('Activate to save forms.', true);
         const current = getActiveProfileName();
         if (!current || current === '__CREATE_NEW__') {
             alert('Select or create a profile first.');
@@ -437,7 +559,8 @@
     }
 
     function handleCreateNewProfile() {
-        const newName = prompt('Enter new profile name:');
+        if (!isActivated) return openLicenseManagerModal('Activate to create profiles.', true);
+        const newName = prompt('Enter new profile name (e.g. A, B, Work Permit):');
         if (newName && newName.trim()) {
             const clean = newName.trim();
             const profiles = getProfiles();
@@ -452,32 +575,8 @@
     }
 
     function createTopToolbarUI() {
-        // 1. Sleek Dropdown Tab when Minimized
-        miniTab = document.createElement('div');
-        miniTab.id = 'af-mini-tab';
-        miniTab.textContent = '⚡ Autofill';
-        miniTab.title = 'Click to expand (Alt+H)';
-        Object.assign(miniTab.style, {
-            position: 'fixed',
-            top: '0px',
-            right: '24px',
-            background: '#090d16',
-            color: '#38bdf8',
-            padding: '3px 12px',
-            borderBottomLeftRadius: '6px',
-            borderBottomRightRadius: '6px',
-            border: '1px solid #1e293b',
-            borderTop: 'none',
-            fontSize: '11px',
-            fontFamily: 'system-ui, sans-serif',
-            cursor: 'pointer',
-            zIndex: '2147483647',
-            display: 'none',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
-        });
-        miniTab.onclick = () => setViewMode('expanded');
+        if (topToolbar) topToolbar.remove();
 
-        // 2. Full-Width Top Docked Bar (Below Bookmarks)
         topToolbar = document.createElement('div');
         topToolbar.id = 'pro-autofill-topbar';
         Object.assign(topToolbar.style, {
@@ -485,11 +584,11 @@
             top: '0px',
             left: '0px',
             width: '100%',
-            height: '36px',
+            height: '38px',
             background: '#090d16',
             color: '#f8fafc',
             borderBottom: '1px solid #1e293b',
-            display: 'flex',
+            display: 'none', // Controlled by applySavedUIMode()
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '0 16px',
@@ -502,34 +601,69 @@
         });
 
         topToolbar.innerHTML = `
-            <div style="display:flex; align-items:center; gap:12px;">
-                <span style="font-weight:800; color:#38bdf8; font-size:13px; display:flex; align-items:center; gap:4px;">
-                    ⚡ <span style="letter-spacing:0.5px;">LIGHTNING AUTOFILL</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-weight:800; color:#38bdf8; font-size:12px; display:flex; align-items:center; gap:4px; margin-right:4px;">
+                    ⚡ <span>AUTOFILL v${CURRENT_VERSION}</span>
                 </span>
-                <div style="display:flex; align-items:center; gap:6px;">
-                    <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:140px;"></select>
-                    <button id="af-btn-edit" style="background:#1e293b; color:#38bdf8; border:1px solid #334155; border-radius:4px; padding:3px 6px; cursor:pointer;" title="Edit Profile Fields">✏️ Edit</button>
-                    <button id="af-btn-save" style="background:#16a34a; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Save / Overwrite Current Form">Save</button>
-                    <button id="af-btn-fill" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Re-Fill Inputs">Fill</button>
-                </div>
+
+                <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:130px;"></select>
+                <button id="af-btn-new" style="background:#334155; color:#38bdf8; border:1px solid #475569; border-radius:4px; padding:3px 8px; cursor:pointer; font-weight:600;" title="Create New Profile">➕ New</button>
+                <button id="af-btn-save" style="background:#16a34a; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Save/Sync Current Form">💾 Save</button>
+                <button id="af-btn-fill" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Fill Target Form">⚡ Fill</button>
+                <button id="af-btn-edit" style="background:#1e293b; color:#94a3b8; border:1px solid #334155; border-radius:4px; padding:3px 6px; cursor:pointer;" title="Edit Profile Rules">✏️ Edit</button>
+
+                <div style="width:1px; height:18px; background:#334155; margin:0 4px;"></div>
+
+                <button id="af-btn-backup" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;" title="Export JSON backup">📦 Backup</button>
+                <button id="af-btn-import" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;" title="Import JSON profiles">📥 Import</button>
             </div>
 
-            <div style="display:flex; align-items:center; gap:10px;">
-                <span id="af-device-indicator" style="font-size:10px; color:#64748b; font-family:monospace;" title="Device Lock Active">🔒 1-PC LOCKED</span>
-                <button id="af-btn-min" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:14px; padding:2px 6px;" title="Minimize to top tab">—</button>
-                <button id="af-btn-hide" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:13px; padding:2px 6px;" title="Hide bar (Alt+H to restore)">✕</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <button id="af-btn-update" style="display:none; background:#22c55e; color:#0f172a; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:700; font-size:11px; animation: afPulse 1.5s infinite;" title="Click to update immediately">
+                    🚀 Update Available
+                </button>
+
+                <span id="af-license-badge" style="font-size:11px; color:#22c55e; cursor:pointer; font-family:monospace; background:#22c55e15; border:1px solid #22c55e44; padding:2px 8px; border-radius:4px;" title="Manage License Key">🔒 ACTIVE</span>
+                <button id="af-btn-hide" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:15px; padding:2px 8px;" title="Hide bar completely (Press Alt+H to reopen)">✕</button>
             </div>
         `;
 
-        document.documentElement.appendChild(miniTab);
+        // Pulse animation for update button
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes afPulse {
+                0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+                70% { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+                100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
         document.documentElement.appendChild(topToolbar);
 
         selectEl = topToolbar.querySelector('#af-select');
-        const editBtn = topToolbar.querySelector('#af-btn-edit');
-        const saveBtn = topToolbar.querySelector('#af-btn-save');
-        const fillBtn = topToolbar.querySelector('#af-btn-fill');
-        const minBtn = topToolbar.querySelector('#af-btn-min');
-        const hideBtn = topToolbar.querySelector('#af-btn-hide');
+        updateBadgeEl = topToolbar.querySelector('#af-btn-update');
+
+        topToolbar.querySelector('#af-btn-new').onclick = handleCreateNewProfile;
+        topToolbar.querySelector('#af-btn-save').onclick = handleSaveCurrent;
+        topToolbar.querySelector('#af-btn-fill').onclick = () => {
+            const c = triggerAutoFill();
+            showToast(`Filled ${c} field(s)`);
+        };
+        topToolbar.querySelector('#af-btn-edit').onclick = () => {
+            const act = getActiveProfileName();
+            if (act) openProfileEditor(act);
+            else alert('Select a profile first.');
+        };
+        topToolbar.querySelector('#af-btn-backup').onclick = exportProfilesToFile;
+        topToolbar.querySelector('#af-btn-import').onclick = importProfilesFromFile;
+        topToolbar.querySelector('#af-license-badge').onclick = () => openLicenseManagerModal();
+        
+        // When clicking (X), save 'hidden' so it stays hidden on refresh
+        topToolbar.querySelector('#af-btn-hide').onclick = () => {
+            setViewMode('hidden');
+            showToast('Bar hidden. Press Alt+H to show.');
+        };
 
         selectEl.onchange = () => {
             if (selectEl.value === '__CREATE_NEW__') handleCreateNewProfile();
@@ -539,24 +673,19 @@
             }
         };
 
-        editBtn.onclick = () => {
-            const act = getActiveProfileName();
-            if (act) openProfileEditor(act);
-            else alert('Select a profile first.');
-        };
-        saveBtn.onclick = handleSaveCurrent;
-        fillBtn.onclick = () => {
-            const c = triggerAutoFill();
-            showToast(`Filled ${c} field(s)`);
-        };
-        minBtn.onclick = () => setViewMode('minimized');
-        hideBtn.onclick = () => {
-            setViewMode('hidden');
-            showToast('Top bar hidden. Press Alt+H to show.');
-        };
-
         applySavedUIMode();
         updateUI();
+
+        // Check for updates
+        checkGitHubForUpdates((newVer) => {
+            if (updateBadgeEl) {
+                updateBadgeEl.style.display = 'inline-block';
+                updateBadgeEl.textContent = `🚀 Update to v${newVer}!`;
+                updateBadgeEl.onclick = () => {
+                    window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
+                };
+            }
+        });
     }
 
     function setViewMode(mode) {
@@ -565,16 +694,12 @@
     }
 
     function applySavedUIMode() {
+        if (!topToolbar) return;
         const mode = getUIState();
         if (mode === 'expanded') {
             topToolbar.style.display = 'flex';
-            miniTab.style.display = 'none';
-        } else if (mode === 'minimized') {
-            topToolbar.style.display = 'none';
-            miniTab.style.display = 'block';
         } else {
             topToolbar.style.display = 'none';
-            miniTab.style.display = 'none';
         }
     }
 
@@ -613,7 +738,7 @@
         toast.textContent = msg;
         Object.assign(toast.style, {
             position: 'fixed',
-            top: '44px',
+            top: '46px',
             right: '16px',
             background: '#1e293b',
             color: '#38bdf8',
@@ -631,7 +756,7 @@
     }
 
     // =========================================================================
-    // 8. RIGHT CLICK CONTEXT MENU & HOTKEYS
+    // 10. CONTEXT MENU & SHORTCUTS
     // =========================================================================
     let contextMenu = null;
     function removeContextMenu() { if (contextMenu) { contextMenu.remove(); contextMenu = null; } }
@@ -645,8 +770,8 @@
         contextMenu = document.createElement('div');
         Object.assign(contextMenu.style, {
             position: 'fixed',
-            left: `${Math.min(x, window.innerWidth - 210)}px`,
-            top: `${Math.min(y, window.innerHeight - 340)}px`,
+            left: `${Math.min(x, window.innerWidth - 220)}px`,
+            top: `${Math.min(y, window.innerHeight - 380)}px`,
             background: '#0f172a',
             color: '#f8fafc',
             border: '1px solid #334155',
@@ -656,7 +781,7 @@
             fontSize: '12px',
             zIndex: '2147483647',
             boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            minWidth: '190px'
+            minWidth: '200px'
         });
 
         const makeItem = (label, onClick, isAccent = false) => {
@@ -682,36 +807,43 @@
             return div;
         };
 
-        contextMenu.appendChild(makeItem(`⚡ Fill: ${active || '(None)'}`, () => triggerAutoFill(), true));
-        contextMenu.appendChild(makeItem(`💾 Save/Sync: ${active || '(None)'}`, handleSaveCurrent));
-        if (active) contextMenu.appendChild(makeItem(`✏️ Edit "${active}"`, () => openProfileEditor(active)));
+        contextMenu.appendChild(makeItem(`⚡ AUTOFILL v${CURRENT_VERSION} #RT`, () => {}, true));
         contextMenu.appendChild(makeDivider());
 
-        names.forEach(name => {
-            contextMenu.appendChild(makeItem(`${name === active ? '✓ ' : '   '}${name}`, () => {
-                setDomainActiveProfile(name);
-                updateUI();
-                triggerAutoFill();
+        if (isActivated) {
+            contextMenu.appendChild(makeItem(`⚡ Fill: ${active || '(None)'}`, () => triggerAutoFill()));
+            contextMenu.appendChild(makeItem(`💾 Save/Sync: ${active || '(None)'}`, handleSaveCurrent));
+            if (active) contextMenu.appendChild(makeItem(`✏️ Edit "${active}"`, () => openProfileEditor(active)));
+            contextMenu.appendChild(makeDivider());
+
+            names.forEach(name => {
+                contextMenu.appendChild(makeItem(`${name === active ? '✓ ' : '   '}${name}`, () => {
+                    setDomainActiveProfile(name);
+                    updateUI();
+                    triggerAutoFill();
+                }));
+            });
+
+            contextMenu.appendChild(makeItem('➕ Create New Profile...', handleCreateNewProfile));
+            contextMenu.appendChild(makeDivider());
+            contextMenu.appendChild(makeItem('📦 Export Backup (JSON)', exportProfilesToFile));
+            contextMenu.appendChild(makeItem('📥 Import Backup (JSON)', importProfilesFromFile));
+            contextMenu.appendChild(makeDivider());
+            
+            // Toggle Top Bar Option
+            const cur = getUIState();
+            contextMenu.appendChild(makeItem(cur === 'expanded' ? '✕ Hide Top Bar' : '👁️ Show Top Bar', () => {
+                setViewMode(cur === 'expanded' ? 'hidden' : 'expanded');
             }));
-        });
+        }
 
-        contextMenu.appendChild(makeItem('➕ Create New Profile...', handleCreateNewProfile));
-        contextMenu.appendChild(makeDivider());
-        contextMenu.appendChild(makeItem('📦 Export Backup (JSON)', exportProfilesToFile));
-        contextMenu.appendChild(makeItem('📥 Import Backup (JSON)', importProfilesFromFile));
-        contextMenu.appendChild(makeDivider());
-
-        const currentMode = getUIState();
-        contextMenu.appendChild(makeItem(currentMode === 'expanded' ? '👁️ Minimize Top Bar' : '👁️ Expand Top Bar', () => {
-            setViewMode(currentMode === 'expanded' ? 'minimized' : 'expanded');
-        }));
-
+        contextMenu.appendChild(makeItem('🔑 License / Activation Manager', () => openLicenseManagerModal()));
         document.documentElement.appendChild(contextMenu);
     }
 
     window.addEventListener('contextmenu', (e) => {
         if (e.shiftKey) return;
-        if (e.target.matches('input, select, textarea, #pro-autofill-topbar, #pro-autofill-topbar *, #af-mini-tab')) {
+        if (e.target.matches('input, select, textarea, #pro-autofill-topbar, #pro-autofill-topbar *')) {
             e.preventDefault();
             showContextMenu(e.clientX, e.clientY);
         } else {
@@ -722,37 +854,63 @@
     window.addEventListener('click', removeContextMenu);
     window.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') removeContextMenu();
+        
+        // Shortcut Alt + H toggles between Show and Hide, saving the choice
         if (e.altKey && e.key.toLowerCase() === 'h') {
-            const mode = getUIState();
-            if (mode === 'expanded') setViewMode('minimized');
-            else if (mode === 'minimized') setViewMode('hidden');
-            else setViewMode('expanded');
+            if (!isActivated) {
+                openLicenseManagerModal(`Activate this device to use AUTOFILL v${CURRENT_VERSION} #RT.`, true);
+            } else {
+                const mode = getUIState();
+                setViewMode(mode === 'expanded' ? 'hidden' : 'expanded');
+            }
         }
     });
 
     // =========================================================================
-    // 9. INITIALIZATION & OBSERVER
+    // 11. LIFECYCLE INITIALIZATION
     // =========================================================================
-    function initApp() {
-        checkActivationStatus((isValid, msg) => {
-            if (!isValid) {
-                promptActivationModal(msg);
-                return;
-            }
+    function mountApp() {
+        createTopToolbarUI();
+        setTimeout(triggerAutoFill, 400);
 
-            createTopToolbarUI();
-            setTimeout(triggerAutoFill, 400);
-
+        if (!observer && document.body) {
             let debounceTimer;
-            const observer = new MutationObserver(() => {
+            observer = new MutationObserver(() => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(triggerAutoFill, 350);
             });
-            if (document.body) {
-                observer.observe(document.body, { childList: true, subtree: true });
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    }
+
+    function unmountApp() {
+        if (topToolbar) topToolbar.remove();
+        if (observer) {
+            observer.disconnect();
+            observer = null;
+        }
+    }
+
+    GM_registerMenuCommand('🔑 License Manager', () => openLicenseManagerModal());
+    GM_registerMenuCommand('⚡ Autofill Form', () => triggerAutoFill());
+    GM_registerMenuCommand('💾 Save Profile', handleSaveCurrent);
+
+    function init() {
+        if (!currentActiveLicense) {
+            openLicenseManagerModal();
+            return;
+        }
+
+        callLicenseAPI('verify', currentActiveLicense, (isValid, msg) => {
+            if (isValid) {
+                isActivated = true;
+                mountApp();
+            } else {
+                isActivated = false;
+                openLicenseManagerModal(msg || 'Key not found in Cloudflare list.', true);
             }
         });
     }
 
-    initApp();
+    init();
 })();
