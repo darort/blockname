@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      8.3
-// @description  AUTOFILL v8.3 - #RT - Strict URL path isolation, smart site-matching, 1-PC lock, CSV importer.
+// @version      8.4
+// @description  AUTOFILL v8.4 - #RT - Keyboard-friendly dropdown search, URL isolation, 1-PC lock, CSV importer.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,7 +23,7 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '8.3';
+    const CURRENT_VERSION = '8.4';
     const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} - #RT`;
 
     // Live Cloudflare Worker
@@ -35,7 +35,7 @@
 
     // Storage Keys
     const STORAGE_PROFILES = 'af_profiles_db';
-    const STORAGE_PAGE_ACTIVE = 'af_page_active_map'; // Path-specific map
+    const STORAGE_PAGE_ACTIVE = 'af_page_active_map';
     const STORAGE_UI_STATE = 'af_ui_state';
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
@@ -294,7 +294,6 @@
     // 6. STRICT URL & PAGE PATH SCOPING ENGINE
     // =========================================================================
     function getPageKey() {
-        // e.g., "kingwinagency.net/workpermit/create/self"
         return (window.location.host + window.location.pathname).replace(/\/+$/, '').toLowerCase();
     }
 
@@ -303,7 +302,6 @@
         const currentKey = getPageKey();
         const currentHost = window.location.hostname.toLowerCase();
 
-        // 1. Path-specific site check
         if (profile.site) {
             const cleanSite = profile.site.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
             if (cleanSite.includes('/')) {
@@ -312,7 +310,6 @@
             return currentHost === cleanSite || currentHost.endsWith('.' + cleanSite);
         }
 
-        // 2. Domain-only check (if site is not recorded)
         if (profile.domain) {
             const cleanDomain = profile.domain.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
             if (cleanDomain.includes('/')) {
@@ -339,7 +336,6 @@
         const currentKey = getPageKey();
         const profiles = getProfiles();
 
-        // Check if user specifically assigned a profile to this exact link path
         if (map[currentKey]) {
             const chosen = map[currentKey];
             if (profiles[chosen] && isProfileMatchingCurrentPage(profiles[chosen])) {
@@ -347,7 +343,6 @@
             }
         }
 
-        // Automatic fallback: check if any profile's registered site matches this URL
         for (const [pName, pData] of Object.entries(profiles)) {
             if (pData.site) {
                 const clean = pData.site.replace(/^https?:\/\//, '').replace(/\/+$/, '').toLowerCase();
@@ -357,7 +352,6 @@
             }
         }
 
-        // Do not guess or default on unfamiliar websites/pages
         return '';
     }
 
@@ -466,12 +460,10 @@
     function triggerAutoFill() {
         if (!isActivated) return 0;
         const activeName = getActiveProfileName();
-        if (!activeName) return 0; // Completely blocks filling if no profile is authorized for this link
+        if (!activeName) return 0;
 
         const profile = getProfiles()[activeName];
         if (!profile || !profile.rules || profile.rules.length === 0) return 0;
-
-        // Strict verification: ensure profile matches current URL
         if (!isProfileMatchingCurrentPage(profile)) return 0;
 
         return applyProfileRules(profile.rules);
@@ -584,7 +576,7 @@
             const domain = p.site ? p.site.split('/')[0] : window.location.hostname;
             out[p.name] = {
                 domain: domain || window.location.hostname,
-                site: p.site || '', // Preserves exact link path
+                site: p.site || '',
                 rules: p.rules
             };
         }
@@ -762,7 +754,7 @@
     }
 
     // =========================================================================
-    // 11. TOP TOOLBAR UI (Smart Path Grouping)
+    // 11. TOP TOOLBAR UI (Keyboard Search Optimized)
     // =========================================================================
     let topToolbar, selectEl, updateSlotEl, observer;
 
@@ -778,7 +770,6 @@
         const capturedRules = captureCurrentForm(current);
         const profiles = getProfiles();
 
-        // Locked strictly to this path
         profiles[current] = {
             domain: window.location.hostname,
             site: currentSitePath,
@@ -845,7 +836,7 @@
                     ⚡ <span>${DISPLAY_TITLE}</span>
                 </span>
 
-                <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:140px;"></select>
+                <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:150px;"></select>
                 <button id="af-btn-new" style="background:#334155; color:#38bdf8; border:1px solid #475569; border-radius:4px; padding:3px 8px; cursor:pointer; font-weight:600;" title="Create New Profile">➕ New</button>
                 <button id="af-btn-save" style="background:#16a34a; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Save/Sync Current Form">💾 Save</button>
                 <button id="af-btn-fill" style="background:#0284c7; color:#fff; border:none; border-radius:4px; padding:3px 10px; cursor:pointer; font-weight:600;" title="Fill Target Form">⚡ Fill</button>
@@ -973,7 +964,6 @@
 
         selectEl.innerHTML = '';
 
-        // Safe Default Option: No profile will run unless authorized
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '';
         defaultOpt.textContent = active ? '-- None / Off --' : '(No Profile - Safe)';
@@ -992,14 +982,14 @@
                 }
             });
 
-            // Group 1: Strictly matches this specific page/link
+            // Group 1: Matches this specific link. Checkmark placed at the END so keyboard jumping works.
             if (pageMatching.length > 0) {
                 const groupMatch = document.createElement('optgroup');
                 groupMatch.label = '📍 For This Link / Page';
                 pageMatching.forEach(name => {
                     const opt = document.createElement('option');
                     opt.value = name;
-                    opt.textContent = `✓ ${name}`;
+                    opt.textContent = `${name}  ✓`; // Clean text at front for keyboard navigation!
                     if (name === active) opt.selected = true;
                     groupMatch.appendChild(opt);
                 });
@@ -1114,7 +1104,7 @@
             contextMenu.appendChild(makeDivider());
 
             names.forEach(name => {
-                contextMenu.appendChild(makeItem(`${name === active ? '✓ ' : '   '}${name}`, () => {
+                contextMenu.appendChild(makeItem(`${name}${name === active ? ' ✓' : ''}`, () => {
                     setPageActiveProfile(name);
                     updateUI();
                     triggerAutoFill();
