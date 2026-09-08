@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      8.1
-// @description  AUTOFILL v8.1 #RT - Auto-reloads on return from upgrade, persistent lock, unified ID.
+// @version      8.2
+// @description  AUTOFILL v8.2 - #RT - Direct Lightning Autofill CSV importer, 1-PC lock, auto-updater.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,8 +23,8 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '8.1';
-    const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} #RT`;
+    const CURRENT_VERSION = '8.2';
+    const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} - #RT`;
 
     // Live Cloudflare Worker
     const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
@@ -36,7 +36,7 @@
     // Storage Keys
     const STORAGE_PROFILES = 'af_profiles_db';
     const STORAGE_DOMAIN_ACTIVE = 'af_domain_active_map';
-    const STORAGE_UI_STATE = 'af_ui_state'; // 'expanded' | 'hidden'
+    const STORAGE_UI_STATE = 'af_ui_state';
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
     const STORAGE_INSTALLED_VER = 'af_installed_version_tracker';
@@ -208,7 +208,7 @@
                 </div>
 
                 <label style="display:block; font-size:11px; color:#cbd5e1; margin-bottom:6px; font-weight:600;">ENTER LICENSE KEY:</label>
-                <input id="af-license-input" placeholder="e.g. VIP-RT-001" value="${storedKey}" 
+                <input id="af-license-input" placeholder="e.g. VIP-DANETH-001" value="${storedKey}" 
                        style="width:100%; box-sizing:border-box; padding:10px; background:#0b1120; border:1px solid #475569; border-radius:6px; color:#fff; font-family:monospace; font-size:13px; text-align:center; margin-bottom:14px; outline:none;" />
 
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -416,7 +416,120 @@
     }
 
     // =========================================================================
-    // 9. BACKUP, IMPORT & VISUAL PROFILE EDITOR
+    // 9. LIGHTNING AUTOFILL CSV CONVERTER ENGINE
+    // =========================================================================
+    function parseCSVLine(text) {
+        const result = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < text.length; i++) {
+            const c = text[i];
+            if (c === '"') {
+                if (inQuotes && text[i + 1] === '"') {
+                    cur += '"';
+                    i++;
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c === ',' && !inQuotes) {
+                result.push(cur);
+                cur = '';
+            } else {
+                cur += c;
+            }
+        }
+        result.push(cur);
+        return result;
+    }
+
+    function cleanRuleString(str) {
+        let s = (str || '').trim();
+        while (s.startsWith('"') && s.endsWith('"')) s = s.slice(1, -1).trim();
+        if (s.startsWith('/') && s.endsWith('/i')) s = s.slice(1, -2).trim();
+        if (s.startsWith('^')) s = s.slice(1).trim();
+        if (s.endsWith('$')) s = s.slice(0, -1).trim();
+        return s.replace(/\\\*|\*/g, '').trim();
+    }
+
+    function buildSelectorFromLightningName(nameStr) {
+        const raw = cleanRuleString(nameStr);
+        const snake = raw.replace(/[\s\-]+/g, '_').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+        
+        const selectors = [
+            `[name="${snake}"]`,
+            `#${snake}`,
+            `[id="${snake}"]`,
+            `[name="${raw}"]`,
+            `#${raw}`,
+            `[placeholder="${raw}" i]`
+        ];
+        return Array.from(new Set(selectors)).join(', ');
+    }
+
+    function parseLightningCSV(csvText) {
+        const lines = csvText.split(/\r?\n/);
+        let mode = '';
+        const profiles = {};
+
+        for (let rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line) continue;
+            if (line.includes('### AUTOFILL PROFILES ###')) { mode = 'profiles'; continue; }
+            if (line.includes('### AUTOFILL RULES ###')) { mode = 'rules'; continue; }
+            if (line.includes('### AUTOFILL SETTINGS ###')) { mode = 'settings'; continue; }
+
+            const cols = parseCSVLine(line);
+            if (mode === 'profiles') {
+                const pid = (cols[0] || '').trim();
+                const name = cleanRuleString(cols[1]);
+                const site = cleanRuleString(cols[2]);
+                if (pid && pid !== 'Profile ID' && name) {
+                    profiles[pid] = { name, site, rules: [] };
+                }
+            } else if (mode === 'rules') {
+                if (cols.length >= 7) {
+                    const rType = (cols[1] || '').trim();
+                    const rName = cols[2] || '';
+                    const rVal = cols[3] || '';
+                    const rPid = (cols[6] || '').trim();
+
+                    if (profiles[rPid]) {
+                        const rawVal = cleanRuleString(rVal);
+                        const selector = buildSelectorFromLightningName(rName);
+                        let ruleType = 'fill';
+                        let finalVal = rawVal;
+
+                        if (rType === '2') {
+                            ruleType = 'select';
+                        } else if (rType === '3') {
+                            ruleType = 'check';
+                            finalVal = (rawVal === '1' || rawVal.toLowerCase() === 'true');
+                        }
+
+                        profiles[rPid].rules.push({
+                            type: ruleType,
+                            selector: selector,
+                            value: finalVal
+                        });
+                    }
+                }
+            }
+        }
+
+        const out = {};
+        for (const pid in profiles) {
+            const p = profiles[pid];
+            const domain = p.site ? p.site.split('/')[0] : window.location.hostname;
+            out[p.name] = {
+                domain: domain || window.location.hostname,
+                rules: p.rules
+            };
+        }
+        return out;
+    }
+
+    // =========================================================================
+    // 10. BACKUP, IMPORT & VISUAL PROFILE EDITOR
     // =========================================================================
     function exportProfilesToFile() {
         if (!isActivated) return openLicenseManagerModal('Activate to export profiles.', true);
@@ -436,21 +549,42 @@
         if (!isActivated) return openLicenseManagerModal('Activate to import profiles.', true);
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
-        fileInput.accept = '.json,application/json';
+        // Accepts both standard JSON backups and Lightning CSV exports
+        fileInput.accept = '.json, .csv, application/json, text/csv';
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
             const reader = new FileReader();
             reader.onload = (event) => {
-                try {
-                    const imported = JSON.parse(event.target.result);
+                const textContent = event.target.result;
+                let imported = null;
+
+                // 1. Try Lightning CSV Detection
+                if (file.name.endsWith('.csv') || textContent.includes('### AUTOFILL PROFILES ###')) {
+                    try {
+                        imported = parseLightningCSV(textContent);
+                    } catch (err) {
+                        alert('Could not parse Lightning Autofill CSV file.');
+                        return;
+                    }
+                } else {
+                    // 2. Standard JSON Backup
+                    try {
+                        imported = JSON.parse(textContent);
+                    } catch {
+                        alert('Invalid JSON file format.');
+                        return;
+                    }
+                }
+
+                if (imported && typeof imported === 'object' && Object.keys(imported).length > 0) {
                     const merged = { ...getProfiles(), ...imported };
                     saveProfiles(merged);
                     updateUI();
-                    showToast(`Imported ${Object.keys(imported).length} profile(s)!`);
+                    showToast(`Imported ${Object.keys(imported).length} profile(s) successfully!`);
                     triggerAutoFill();
-                } catch {
-                    alert('Invalid JSON file format.');
+                } else {
+                    alert('No valid profiles found in the selected file.');
                 }
             };
             reader.readAsText(file);
@@ -565,7 +699,7 @@
     }
 
     // =========================================================================
-    // 10. TOP TOOLBAR UI
+    // 11. TOP TOOLBAR UI
     // =========================================================================
     let topToolbar, selectEl, updateSlotEl, observer;
 
@@ -642,7 +776,7 @@
                 <div style="width:1px; height:18px; background:#334155; margin:0 4px;"></div>
 
                 <button id="af-btn-backup" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;" title="Export JSON backup">📦 Backup</button>
-                <button id="af-btn-import" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;" title="Import JSON profiles">📥 Import</button>
+                <button id="af-btn-import" style="background:#1e293b; color:#cbd5e1; border:1px solid #334155; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:11px;" title="Import JSON or Lightning CSV">📥 Import</button>
             </div>
 
             <div style="display:flex; align-items:center; gap:8px;">
@@ -713,8 +847,7 @@
                 const btn = updateSlotEl.querySelector('#af-btn-upgrade-action');
                 if (btn) {
                     btn.onclick = () => {
-                        if (confirm(`A new release (AUTOFILL v${remoteVer} #RT) is available!\n\nClick OK to open the updater. Once you click "Update" in Tampermonkey, this page will automatically refresh!`)) {
-                            // Set session flag so this tab reloads automatically when focused
+                        if (confirm(`A new release (AUTOFILL v${remoteVer} - #RT) is available!\n\nClick OK to open the updater. Once you click "Update" in Tampermonkey, this page will automatically refresh!`)) {
                             sessionStorage.setItem(SESSION_UPGRADE_PENDING, 'true');
                             showToast('⏳ Waiting for Tampermonkey update... Page will auto-reload when you return!', 6000);
                             window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
@@ -722,7 +855,6 @@
                     };
                 }
 
-                // Unhide the bar once to notify user of new release
                 const lastNotified = GM_getValue(STORAGE_NOTIFIED_VERSION, '');
                 if (lastNotified !== remoteVer) {
                     setViewMode('expanded');
@@ -806,7 +938,7 @@
     }
 
     // =========================================================================
-    // 11. CONTEXT MENU & SHORTCUTS
+    // 12. CONTEXT MENU & SHORTCUTS
     // =========================================================================
     let contextMenu = null;
     function removeContextMenu() { if (contextMenu) { contextMenu.remove(); contextMenu = null; } }
@@ -877,7 +1009,7 @@
             contextMenu.appendChild(makeItem('➕ Create New Profile...', handleCreateNewProfile));
             contextMenu.appendChild(makeDivider());
             contextMenu.appendChild(makeItem('📦 Export Backup (JSON)', exportProfilesToFile));
-            contextMenu.appendChild(makeItem('📥 Import Backup (JSON)', importProfilesFromFile));
+            contextMenu.appendChild(makeItem('📥 Import Backup (JSON/CSV)', importProfilesFromFile));
             contextMenu.appendChild(makeDivider());
             
             const cur = getUIState();
@@ -915,7 +1047,7 @@
     });
 
     // =========================================================================
-    // 12. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
+    // 13. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
     // =========================================================================
     function mountApp() {
         createTopToolbarUI();
