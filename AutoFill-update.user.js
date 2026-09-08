@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      7.9
-// @description  AUTOFILL PRO #RT - Hardware locked (1 PC), unified ID, and in-place GitHub updater.
+// @version      8.1
+// @description  AUTOFILL v8.1 #RT - Auto-reloads on return from upgrade, persistent lock, unified ID.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,7 +23,8 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '7.9';
+    const CURRENT_VERSION = '8.1';
+    const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} #RT`;
 
     // Live Cloudflare Worker
     const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
@@ -40,6 +41,7 @@
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
     const STORAGE_INSTALLED_VER = 'af_installed_version_tracker';
     const STORAGE_NOTIFIED_VERSION = 'af_last_notified_update_version';
+    const SESSION_UPGRADE_PENDING = 'af_upgrade_pending_reload';
 
     let isActivated = false;
     let currentActiveLicense = GM_getValue(STORAGE_LICENSE, '');
@@ -137,7 +139,27 @@
     }
 
     // =========================================================================
-    // 4. ACTIVATION MODAL
+    // 4. AUTO-RELOAD LISTENER ON RETURN FROM TAMPERMONKEY TAB
+    // =========================================================================
+    function handleWindowFocusCheck() {
+        if (sessionStorage.getItem(SESSION_UPGRADE_PENDING) === 'true') {
+            sessionStorage.removeItem(SESSION_UPGRADE_PENDING);
+            showToast('🔄 Finalizing update... Reloading page...', 2000);
+            setTimeout(() => {
+                window.location.reload();
+            }, 600);
+        }
+    }
+
+    window.addEventListener('focus', handleWindowFocusCheck);
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+            handleWindowFocusCheck();
+        }
+    });
+
+    // =========================================================================
+    // 5. ACTIVATION MODAL
     // =========================================================================
     function openLicenseManagerModal(customNotice = '', isError = false) {
         const existing = document.getElementById('af-activate-modal');
@@ -166,7 +188,7 @@
                 
                 <div style="text-align:center; margin-bottom:14px;">
                     <div style="font-size:26px; margin-bottom:4px;">⚡</div>
-                    <h3 style="margin:0; font-size:18px; color:#38bdf8; letter-spacing:0.5px;">AUTOFILL v${CURRENT_VERSION} #RT</h3>
+                    <h3 style="margin:0; font-size:18px; color:#38bdf8; letter-spacing:0.5px;">${DISPLAY_TITLE}</h3>
                     <p style="font-size:12px; color:#94a3b8; margin:4px 0 0 0;">Hardware Locked (1 PC) • Cloudflare Protected</p>
                 </div>
 
@@ -186,7 +208,7 @@
                 </div>
 
                 <label style="display:block; font-size:11px; color:#cbd5e1; margin-bottom:6px; font-weight:600;">ENTER LICENSE KEY:</label>
-                <input id="af-license-input" placeholder="e.g. VIP-DANETH-001" value="${storedKey}" 
+                <input id="af-license-input" placeholder="e.g. VIP-RT-001" value="${storedKey}" 
                        style="width:100%; box-sizing:border-box; padding:10px; background:#0b1120; border:1px solid #475569; border-radius:6px; color:#fff; font-family:monospace; font-size:13px; text-align:center; margin-bottom:14px; outline:none;" />
 
                 <div style="display:flex; flex-direction:column; gap:8px;">
@@ -269,7 +291,7 @@
     }
 
     // =========================================================================
-    // 5. STORAGE ACCESSORS
+    // 6. STORAGE ACCESSORS
     // =========================================================================
     function getProfiles() { return GM_getValue(STORAGE_PROFILES, {}); }
     function saveProfiles(data) { GM_setValue(STORAGE_PROFILES, data); }
@@ -284,7 +306,7 @@
     function setUIState(state) { GM_setValue(STORAGE_UI_STATE, state); }
 
     // =========================================================================
-    // 6. REACT / VUE DOM BYPASS
+    // 7. REACT / VUE DOM BYPASS
     // =========================================================================
     function setNativeValue(element, value) {
         if (!element || document.activeElement === element) return;
@@ -314,7 +336,7 @@
     }
 
     // =========================================================================
-    // 7. FORM CAPTURE & APPLY
+    // 8. FORM CAPTURE & APPLY
     // =========================================================================
     function captureCurrentForm(targetProfileName) {
         const profiles = getProfiles();
@@ -394,7 +416,7 @@
     }
 
     // =========================================================================
-    // 8. BACKUP, IMPORT & VISUAL PROFILE EDITOR
+    // 9. BACKUP, IMPORT & VISUAL PROFILE EDITOR
     // =========================================================================
     function exportProfilesToFile() {
         if (!isActivated) return openLicenseManagerModal('Activate to export profiles.', true);
@@ -543,7 +565,7 @@
     }
 
     // =========================================================================
-    // 9. TOP TOOLBAR UI
+    // 10. TOP TOOLBAR UI
     // =========================================================================
     let topToolbar, selectEl, updateSlotEl, observer;
 
@@ -608,7 +630,7 @@
         topToolbar.innerHTML = `
             <div style="display:flex; align-items:center; gap:8px;">
                 <span style="font-weight:800; color:#38bdf8; font-size:12px; display:flex; align-items:center; gap:4px; margin-right:4px;">
-                    ⚡ <span>AUTOFILL v${CURRENT_VERSION}</span>
+                    ⚡ <span>${DISPLAY_TITLE}</span>
                 </span>
 
                 <select id="af-select" style="background:#1e293b; color:#fff; border:1px solid #475569; border-radius:4px; padding:3px 8px; font-size:11px; outline:none; max-width:130px;"></select>
@@ -691,8 +713,10 @@
                 const btn = updateSlotEl.querySelector('#af-btn-upgrade-action');
                 if (btn) {
                     btn.onclick = () => {
-                        // User confirmation step before redirecting
-                        if (confirm(`A new release (AUTOFILL v${remoteVer} #RT) is available!\n\nWould you like to upgrade now?`)) {
+                        if (confirm(`A new release (AUTOFILL v${remoteVer} #RT) is available!\n\nClick OK to open the updater. Once you click "Update" in Tampermonkey, this page will automatically refresh!`)) {
+                            // Set session flag so this tab reloads automatically when focused
+                            sessionStorage.setItem(SESSION_UPGRADE_PENDING, 'true');
+                            showToast('⏳ Waiting for Tampermonkey update... Page will auto-reload when you return!', 6000);
                             window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
                         }
                     };
@@ -782,7 +806,7 @@
     }
 
     // =========================================================================
-    // 10. CONTEXT MENU & SHORTCUTS
+    // 11. CONTEXT MENU & SHORTCUTS
     // =========================================================================
     let contextMenu = null;
     function removeContextMenu() { if (contextMenu) { contextMenu.remove(); contextMenu = null; } }
@@ -833,7 +857,7 @@
             return div;
         };
 
-        contextMenu.appendChild(makeItem(`⚡ AUTOFILL v${CURRENT_VERSION} #RT`, () => {}, true));
+        contextMenu.appendChild(makeItem(`⚡ ${DISPLAY_TITLE}`, () => {}, true));
         contextMenu.appendChild(makeDivider());
 
         if (isActivated) {
@@ -882,7 +906,7 @@
         
         if (e.altKey && e.key.toLowerCase() === 'h') {
             if (!isActivated) {
-                openLicenseManagerModal(`Activate this device to use AUTOFILL v${CURRENT_VERSION} #RT.`, true);
+                openLicenseManagerModal(`Activate this device to use ${DISPLAY_TITLE}.`, true);
             } else {
                 const mode = getUIState();
                 setViewMode(mode === 'expanded' ? 'hidden' : 'expanded');
@@ -891,7 +915,7 @@
     });
 
     // =========================================================================
-    // 11. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
+    // 12. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
     // =========================================================================
     function mountApp() {
         createTopToolbarUI();
@@ -901,7 +925,7 @@
         if (previousRecordedVersion && compareVersions(CURRENT_VERSION, previousRecordedVersion)) {
             setViewMode('expanded');
             setTimeout(() => {
-                showToast(`🎉 Upgraded successfully to AUTOFILL v${CURRENT_VERSION} #RT!`, 5000);
+                showToast(`🎉 Upgraded successfully to ${DISPLAY_TITLE}!`, 5000);
             }, 600);
             GM_setValue(STORAGE_INSTALLED_VER, CURRENT_VERSION);
         } else if (!previousRecordedVersion) {
