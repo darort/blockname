@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         AUTOFILL PRO #RT
 // @namespace    https://github.com/darort/blockname
-// @version      8.4
-// @description  AUTOFILL v8.4 - #RT - Keyboard-friendly dropdown search, URL isolation, 1-PC lock, CSV importer.
+// @version      8.5
+// @description  AUTOFILL v8.5 - #RT - Live code suggestion hints, right-click menu toggle, URL isolation, 1-PC lock.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,7 +23,7 @@
     // =========================================================================
     // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '8.4';
+    const CURRENT_VERSION = '8.5';
     const DISPLAY_TITLE = `AUTOFILL v${CURRENT_VERSION} - #RT`;
 
     // Live Cloudflare Worker
@@ -139,7 +139,7 @@
     }
 
     // =========================================================================
-    // 4. AUTO-RELOAD LISTENER ON RETURN FROM TAMPERMONKEY TAB
+    // 4. AUTO-RELOAD ON RETURN FROM TAMPERMONKEY TAB
     // =========================================================================
     function handleWindowFocusCheck() {
         if (sessionStorage.getItem(SESSION_UPGRADE_PENDING) === 'true') {
@@ -362,7 +362,13 @@
     // 7. REACT / VUE DOM BYPASS
     // =========================================================================
     function setNativeValue(element, value) {
-        if (!element || document.activeElement === element) return;
+        if (!element || document.activeElement === element) {
+            if (element) {
+                element.value = value;
+                ['input', 'change'].forEach(evt => element.dispatchEvent(new Event(evt, { bubbles: true })));
+            }
+            return;
+        }
         const proto = Object.getPrototypeOf(element);
         const descriptor = Object.getOwnPropertyDescriptor(proto, 'value');
 
@@ -470,7 +476,159 @@
     }
 
     // =========================================================================
-    // 9. LIGHTNING AUTOFILL CSV CONVERTER ENGINE
+    // 9. LIVE SEARCH AUTO-SUGGESTION HINT POPUP ENGINE
+    // =========================================================================
+    let hintPopupEl = null;
+
+    function createHintPopup() {
+        if (hintPopupEl) return hintPopupEl;
+        hintPopupEl = document.createElement('div');
+        hintPopupEl.id = 'af-hint-suggestion-box';
+        Object.assign(hintPopupEl.style, {
+            position: 'fixed',
+            background: '#090d16',
+            border: '1px solid #0284c7',
+            borderRadius: '8px',
+            padding: '6px',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.7)',
+            zIndex: '2147483647',
+            display: 'none',
+            fontFamily: 'system-ui, sans-serif',
+            fontSize: '12px',
+            maxHeight: '260px',
+            overflowY: 'auto'
+        });
+        document.documentElement.appendChild(hintPopupEl);
+        return hintPopupEl;
+    }
+
+    function hideHintPopup() {
+        if (hintPopupEl) hintPopupEl.style.display = 'none';
+    }
+
+    function getMatchesForInput(targetInput, query) {
+        if (!isActivated) return [];
+        const cleanQ = (query || '').trim().toLowerCase();
+        const inputId = (targetInput.id || '').toLowerCase();
+        const inputName = (targetInput.name || '').toLowerCase();
+        const isLineCodeField = inputId.includes('line_code') || inputName.includes('line_code') || inputId.includes('code');
+
+        if (cleanQ.length < 2 && !isLineCodeField) return [];
+
+        const profiles = getProfiles();
+        const matches = [];
+        const seen = new Set();
+
+        for (const [profileName, pData] of Object.entries(profiles)) {
+            if (!pData.rules) continue;
+
+            for (const r of pData.rules) {
+                if (r.type !== 'fill' || !r.value) continue;
+                const rVal = String(r.value).trim();
+                const rValLower = rVal.toLowerCase();
+                const rSel = (r.selector || '').toLowerCase();
+
+                const selectorMatchesField = (inputId && rSel.includes(inputId)) || (inputName && rSel.includes(inputName));
+                const textMatches = cleanQ.length >= 1 && rValLower.includes(cleanQ);
+
+                if (textMatches || (isLineCodeField && selectorMatchesField && cleanQ.length >= 1 && rValLower.includes(cleanQ))) {
+                    const key = `${rVal}__${profileName}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        matches.push({
+                            value: rVal,
+                            profileName: profileName,
+                            exactFieldMatch: selectorMatchesField
+                        });
+                    }
+                }
+            }
+        }
+
+        // Sort: Exact field matches first, then alphabetically
+        return matches.sort((a, b) => (b.exactFieldMatch ? 1 : 0) - (a.exactFieldMatch ? 1 : 0)).slice(0, 8);
+    }
+
+    function renderHintsForInput(targetInput) {
+        const q = targetInput.value;
+        const matches = getMatchesForInput(targetInput, q);
+
+        if (matches.length === 0) {
+            hideHintPopup();
+            return;
+        }
+
+        const popup = createHintPopup();
+        popup.innerHTML = `
+            <div style="padding:4px 8px; font-size:10px; color:#94a3b8; border-bottom:1px solid #1e293b; margin-bottom:4px; display:flex; justify-content:space-between;">
+                <span>💡 STORED VALUE HINTS</span>
+                <span style="color:#38bdf8; font-family:monospace;">${matches.length} found</span>
+            </div>
+        `;
+
+        matches.forEach(item => {
+            const row = document.createElement('div');
+            Object.assign(row.style, {
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '6px 10px',
+                cursor: 'pointer',
+                borderRadius: '5px',
+                gap: '12px',
+                background: '#1e293b55',
+                marginBottom: '3px'
+            });
+
+            row.innerHTML = `
+                <span style="font-weight:700; color:#38bdf8; font-family:monospace;">${item.value}</span>
+                <span style="font-size:10px; background:#0284c722; color:#38bdf8; border:1px solid #0284c744; padding:1px 6px; border-radius:3px; font-family:sans-serif;">Profile: ${item.profileName}</span>
+            `;
+
+            row.onmouseenter = () => row.style.background = '#0284c733';
+            row.onmouseleave = () => row.style.background = '#1e293b55';
+
+            row.onmousedown = (e) => {
+                e.preventDefault(); // Prevents input from losing focus prematurely
+                targetInput.value = item.value;
+                setNativeValue(targetInput, item.value);
+                hideHintPopup();
+                showToast(`Filled "${item.value}" (from ${item.profileName})`, 2000);
+            };
+
+            popup.appendChild(row);
+        });
+
+        const rect = targetInput.getBoundingClientRect();
+        popup.style.top = `${rect.bottom + window.scrollY + 4}px`;
+        popup.style.left = `${rect.left + window.scrollX}px`;
+        popup.style.minWidth = `${Math.max(rect.width, 240)}px`;
+        popup.style.display = 'block';
+    }
+
+    // Attach Live Input & Focus Watchers
+    document.addEventListener('input', (e) => {
+        if (e.target && e.target.matches('input[type="text"], input:not([type]), textarea')) {
+            renderHintsForInput(e.target);
+        }
+    }, true);
+
+    document.addEventListener('focusin', (e) => {
+        if (e.target && e.target.matches('input[type="text"], input:not([type]), textarea')) {
+            if (e.target.value.trim().length >= 2 || (e.target.id && e.target.id.includes('line_code'))) {
+                renderHintsForInput(e.target);
+            }
+        }
+    }, true);
+
+    document.addEventListener('focusout', () => {
+        setTimeout(hideHintPopup, 250);
+    }, true);
+
+    window.addEventListener('scroll', hideHintPopup, true);
+
+    // =========================================================================
+    // 10. LIGHTNING AUTOFILL CSV CONVERTER ENGINE
     // =========================================================================
     function parseCSVLine(text) {
         const result = [];
@@ -584,7 +742,7 @@
     }
 
     // =========================================================================
-    // 10. BACKUP, IMPORT & VISUAL PROFILE EDITOR
+    // 11. BACKUP, IMPORT & VISUAL PROFILE EDITOR
     // =========================================================================
     function exportProfilesToFile() {
         if (!isActivated) return openLicenseManagerModal('Activate to export profiles.', true);
@@ -754,7 +912,7 @@
     }
 
     // =========================================================================
-    // 11. TOP TOOLBAR UI (Keyboard Search Optimized)
+    // 12. TOP TOOLBAR UI
     // =========================================================================
     let topToolbar, selectEl, updateSlotEl, observer;
 
@@ -854,7 +1012,7 @@
                 </div>
 
                 <span id="af-license-badge" style="font-size:11px; color:#22c55e; cursor:pointer; font-family:monospace; background:#22c55e15; border:1px solid #22c55e44; padding:2px 8px; border-radius:4px;" title="Manage License Key">🔒 ACTIVE</span>
-                <button id="af-btn-hide" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:15px; padding:2px 8px;" title="Hide bar completely (Press Alt+H to reopen)">✕</button>
+                <button id="af-btn-hide" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:15px; padding:2px 8px;" title="Hide bar completely (Right click form or Alt+H to reopen)">✕</button>
             </div>
         `;
 
@@ -890,7 +1048,7 @@
 
         topToolbar.querySelector('#af-btn-hide').onclick = () => {
             setViewMode('hidden');
-            showToast('Bar hidden. Press Alt+H to show.');
+            showToast('Bar hidden. Right-click any input or press Alt+H to show.');
         };
 
         selectEl.onchange = () => {
@@ -982,21 +1140,19 @@
                 }
             });
 
-            // Group 1: Matches this specific link. Checkmark placed at the END so keyboard jumping works.
             if (pageMatching.length > 0) {
                 const groupMatch = document.createElement('optgroup');
                 groupMatch.label = '📍 For This Link / Page';
                 pageMatching.forEach(name => {
                     const opt = document.createElement('option');
                     opt.value = name;
-                    opt.textContent = `${name}  ✓`; // Clean text at front for keyboard navigation!
+                    opt.textContent = `${name}  ✓`;
                     if (name === active) opt.selected = true;
                     groupMatch.appendChild(opt);
                 });
                 selectEl.appendChild(groupMatch);
             }
 
-            // Group 2: Belongs to other links or websites
             if (otherProfiles.length > 0) {
                 const groupOther = document.createElement('optgroup');
                 groupOther.label = '🌐 Other Saved Profiles';
@@ -1043,7 +1199,7 @@
     }
 
     // =========================================================================
-    // 12. CONTEXT MENU & SHORTCUTS
+    // 13. CONTEXT MENU WITH QUICK TOP BAR TOGGLE
     // =========================================================================
     let contextMenu = null;
     function removeContextMenu() { if (contextMenu) { contextMenu.remove(); contextMenu = null; } }
@@ -1053,36 +1209,40 @@
         const profiles = getProfiles();
         const names = Object.keys(profiles);
         const active = getActiveProfileName();
+        const curMode = getUIState();
 
         contextMenu = document.createElement('div');
         Object.assign(contextMenu.style, {
             position: 'fixed',
-            left: `${Math.min(x, window.innerWidth - 220)}px`,
-            top: `${Math.min(y, window.innerHeight - 380)}px`,
+            left: `${Math.min(x, window.innerWidth - 240)}px`,
+            top: `${Math.min(y, window.innerHeight - 420)}px`,
             background: '#0f172a',
             color: '#f8fafc',
             border: '1px solid #334155',
-            borderRadius: '6px',
-            padding: '4px',
+            borderRadius: '8px',
+            padding: '5px',
             fontFamily: 'system-ui, sans-serif',
             fontSize: '12px',
             zIndex: '2147483647',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-            minWidth: '200px'
+            boxShadow: '0 12px 30px rgba(0,0,0,0.6)',
+            minWidth: '220px'
         });
 
-        const makeItem = (label, onClick, isAccent = false) => {
+        const makeItem = (label, onClick, isAccent = false, isToggleBtn = false) => {
             const item = document.createElement('div');
             item.textContent = label;
             Object.assign(item.style, {
-                padding: '6px 10px',
+                padding: '7px 10px',
                 cursor: 'pointer',
-                borderRadius: '4px',
+                borderRadius: '5px',
                 color: isAccent ? '#38bdf8' : '#f8fafc',
-                fontWeight: isAccent ? '600' : 'normal'
+                fontWeight: isAccent || isToggleBtn ? '600' : 'normal',
+                background: isToggleBtn ? '#0284c722' : 'transparent',
+                border: isToggleBtn ? '1px solid #0284c744' : 'none',
+                marginBottom: isToggleBtn ? '4px' : '0'
             });
-            item.onmouseenter = () => item.style.background = '#1e293b';
-            item.onmouseleave = () => item.style.background = 'transparent';
+            item.onmouseenter = () => item.style.background = isToggleBtn ? '#0284c744' : '#1e293b';
+            item.onmouseleave = () => item.style.background = isToggleBtn ? '#0284c722' : 'transparent';
             item.onclick = (e) => { e.stopPropagation(); removeContextMenu(); onClick(); };
             return item;
         };
@@ -1094,7 +1254,20 @@
             return div;
         };
 
+        // Header Title
         contextMenu.appendChild(makeItem(`⚡ ${DISPLAY_TITLE}`, () => {}, true));
+
+        // Direct Toggle Button: Shows immediately at top
+        contextMenu.appendChild(makeItem(
+            curMode === 'expanded' ? '✕ Hide Top Bar (Alt+H)' : '👁️ Open Top Bar (Alt+H)',
+            () => {
+                setViewMode(curMode === 'expanded' ? 'hidden' : 'expanded');
+                showToast(curMode === 'expanded' ? 'Toolbar hidden' : 'Toolbar opened');
+            },
+            true,
+            true
+        ));
+
         contextMenu.appendChild(makeDivider());
 
         if (isActivated) {
@@ -1116,20 +1289,16 @@
             contextMenu.appendChild(makeItem('📦 Export Backup (JSON)', exportProfilesToFile));
             contextMenu.appendChild(makeItem('📥 Import Backup (JSON/CSV)', importProfilesFromFile));
             contextMenu.appendChild(makeDivider());
-
-            const cur = getUIState();
-            contextMenu.appendChild(makeItem(cur === 'expanded' ? '✕ Hide Top Bar' : '👁️ Show Top Bar', () => {
-                setViewMode(cur === 'expanded' ? 'hidden' : 'expanded');
-            }));
         }
 
         contextMenu.appendChild(makeItem('🔑 License / Activation Manager', () => openLicenseManagerModal()));
         document.documentElement.appendChild(contextMenu);
     }
 
+    // Right-click triggers on any form field or toolbar element
     window.addEventListener('contextmenu', (e) => {
         if (e.shiftKey) return;
-        if (e.target.matches('input, select, textarea, #pro-autofill-topbar, #pro-autofill-topbar *')) {
+        if (e.target.matches('input, select, textarea, button, label, form, #pro-autofill-topbar, #pro-autofill-topbar *')) {
             e.preventDefault();
             showContextMenu(e.clientX, e.clientY);
         } else {
@@ -1152,7 +1321,7 @@
     });
 
     // =========================================================================
-    // 13. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
+    // 14. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
     // =========================================================================
     function mountApp() {
         createTopToolbarUI();
