@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         AUTOFILL v7.6 #RT
+// @name         AUTOFILL v7.8 #RT
 // @namespace    https://tampermonkey.net/
-// @version      7.6
-// @description  AUTOFILL v7.6 #RT - Auto-unhides top bar on new version release, 1-PC lock, GitHub updater.
+// @version      7.8
+// @description  AUTOFILL v7.8 #RT - Post-upgrade success announcement, "Up to date" status, and manual GitHub updater.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -23,13 +23,13 @@
     // =========================================================================
     // 0. CONFIGURATION & REPOSITORY LINKS
     // =========================================================================
-    const CURRENT_VERSION = '7.6';
+    const CURRENT_VERSION = '7.8';
 
     // Live Cloudflare Worker
     const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
     const LICENSE_API_URL = RAW_API_URL.replace(/\/+$/, '');
 
-    // GitHub Raw Update URL
+    // GitHub Raw Script URL
     const GITHUB_RAW_SCRIPT_URL = 'https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js';
 
     // Storage Keys
@@ -38,6 +38,7 @@
     const STORAGE_UI_STATE = 'af_ui_state'; // 'expanded' | 'hidden'
     const STORAGE_LICENSE = 'af_license_key';
     const STORAGE_DEVICE_ID = 'af_unique_device_id';
+    const STORAGE_INSTALLED_VER = 'af_installed_version_tracker';
     const STORAGE_NOTIFIED_VERSION = 'af_last_notified_update_version';
 
     let isActivated = false;
@@ -53,7 +54,7 @@
             const ctx = canvas.getContext('2d');
             ctx.textBaseline = 'top';
             ctx.font = "14px 'Arial'";
-            ctx.fillText("RT-AUTOFILL-v76", 2, 2);
+            ctx.fillText("RT-AUTOFILL-v77", 2, 2);
             const rawHash = btoa(canvas.toDataURL() + screen.width + 'x' + screen.height + navigator.hardwareConcurrency);
             const cleanHash = rawHash.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
 
@@ -97,7 +98,7 @@
     }
 
     // =========================================================================
-    // 3. GITHUB UPDATE CHECKER & ONE-TIME ALERT DISPATCHER
+    // 3. GITHUB UPDATE CHECKER & VERSION COMPARATOR
     // =========================================================================
     function compareVersions(remote, current) {
         const rParts = remote.split('.').map(Number);
@@ -111,7 +112,7 @@
         return false;
     }
 
-    function checkGitHubForUpdates(onUpdateFound) {
+    function checkGitHubForUpdates(onResult) {
         GM_xmlhttpRequest({
             method: 'GET',
             url: `${GITHUB_RAW_SCRIPT_URL}?t=${Date.now()}`,
@@ -122,10 +123,15 @@
                     if (match && match[1]) {
                         const remoteVersion = match[1].trim();
                         if (compareVersions(remoteVersion, CURRENT_VERSION)) {
-                            onUpdateFound(remoteVersion);
+                            onResult(true, remoteVersion);
+                            return;
                         }
                     }
                 }
+                onResult(false, CURRENT_VERSION);
+            },
+            onerror: function () {
+                onResult(false, CURRENT_VERSION);
             }
         });
     }
@@ -370,7 +376,7 @@
                     }
                 });
             } catch (err) {
-                console.error('[AUTOFILL v7.6 Error]', err);
+                console.error('[AUTOFILL v7.7 Error]', err);
             }
         });
         return count;
@@ -396,7 +402,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `autofill_v76_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `autofill_v77_backup_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -422,7 +428,7 @@
                     showToast(`Imported ${Object.keys(imported).length} profile(s)!`);
                     triggerAutoFill();
                 } catch {
-                    alert('Invalid JSON file.');
+                    alert('Invalid JSON file format.');
                 }
             };
             reader.readAsText(file);
@@ -537,9 +543,9 @@
     }
 
     // =========================================================================
-    // 9. TOP TOOLBAR UI (With Smart Update Popup Override)
+    // 9. TOP TOOLBAR UI
     // =========================================================================
-    let topToolbar, selectEl, updateBadgeEl, observer;
+    let topToolbar, selectEl, updateSlotEl, observer;
 
     function handleSaveCurrent() {
         if (!isActivated) return openLicenseManagerModal('Activate to save forms.', true);
@@ -618,16 +624,17 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:8px;">
-                <button id="af-btn-update" style="display:none; background:#22c55e; color:#0f172a; border:none; border-radius:4px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:11px; animation: afPulse 1.4s infinite;" title="Click to update immediately via Tampermonkey">
-                    🚀 Update Available
-                </button>
+                <!-- Update / Up-to-Date Slot -->
+                <div id="af-update-slot" style="display:flex; align-items:center;">
+                    <span style="font-size:10px; color:#10b981; font-family:monospace; background:#10b98115; border:1px solid #10b98144; padding:2px 8px; border-radius:4px;" title="Running latest release">✓ UP TO DATE</span>
+                </div>
 
                 <span id="af-license-badge" style="font-size:11px; color:#22c55e; cursor:pointer; font-family:monospace; background:#22c55e15; border:1px solid #22c55e44; padding:2px 8px; border-radius:4px;" title="Manage License Key">🔒 ACTIVE</span>
                 <button id="af-btn-hide" style="background:transparent; color:#94a3b8; border:none; cursor:pointer; font-size:15px; padding:2px 8px;" title="Hide bar completely (Press Alt+H to reopen)">✕</button>
             </div>
         `;
 
-        // Pulse animation for update button
+        // Pulse animation for upgrade button
         const styleSheet = document.createElement('style');
         styleSheet.textContent = `
             @keyframes afPulse {
@@ -641,7 +648,7 @@
         document.documentElement.appendChild(topToolbar);
 
         selectEl = topToolbar.querySelector('#af-select');
-        updateBadgeEl = topToolbar.querySelector('#af-btn-update');
+        updateSlotEl = topToolbar.querySelector('#af-update-slot');
 
         topToolbar.querySelector('#af-btn-new').onclick = handleCreateNewProfile;
         topToolbar.querySelector('#af-btn-save').onclick = handleSaveCurrent;
@@ -674,23 +681,33 @@
         applySavedUIMode();
         updateUI();
 
-        // Check for updates & auto-unhide if new version released
-        checkGitHubForUpdates((newVer) => {
-            if (updateBadgeEl) {
-                updateBadgeEl.style.display = 'inline-block';
-                updateBadgeEl.textContent = `🚀 Update to v${newVer}!`;
-                updateBadgeEl.onclick = () => {
-                    window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
-                };
-
-                // ONE-TIME POPUP ALERT: If user hasn't been alerted for this exact version yet
-                const lastNotified = GM_getValue(STORAGE_NOTIFIED_VERSION, '');
-                if (lastNotified !== newVer) {
-                    // Unhide and pop up the bar automatically on page refresh
-                    setViewMode('expanded');
-                    GM_setValue(STORAGE_NOTIFIED_VERSION, newVer);
-                    showToast(`🚀 Update Alert: AUTOFILL v${newVer} is available! Click 'Update Available' to install.`);
+        // Check for updates & render either "Update to vX.X" or "✓ UP TO DATE"
+        checkGitHubForUpdates((hasUpdate, remoteVer) => {
+            if (!updateSlotEl) return;
+            if (hasUpdate) {
+                updateSlotEl.innerHTML = `
+                    <button id="af-btn-upgrade-action" style="background:#22c55e; color:#0f172a; border:none; border-radius:4px; padding:4px 12px; cursor:pointer; font-weight:800; font-size:11px; animation: afPulse 1.4s infinite;" title="Click to open Tampermonkey installer">
+                        🚀 Upgrade to v${remoteVer}!
+                    </button>
+                `;
+                const btn = updateSlotEl.querySelector('#af-btn-upgrade-action');
+                if (btn) {
+                    btn.onclick = () => {
+                        window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
+                    };
                 }
+
+                // Unhide the bar once to notify user of new release
+                const lastNotified = GM_getValue(STORAGE_NOTIFIED_VERSION, '');
+                if (lastNotified !== remoteVer) {
+                    setViewMode('expanded');
+                    GM_setValue(STORAGE_NOTIFIED_VERSION, remoteVer);
+                    showToast(`🚀 New Version: AUTOFILL v${remoteVer} is available! Click 'Upgrade' to install.`, 4500);
+                }
+            } else {
+                updateSlotEl.innerHTML = `
+                    <span style="font-size:10px; color:#10b981; font-family:monospace; background:#10b98115; border:1px solid #10b98144; padding:2px 8px; border-radius:4px;" title="You are on the latest version">✓ UP TO DATE</span>
+                `;
             }
         });
     }
@@ -740,26 +757,27 @@
         selectEl.appendChild(newOpt);
     }
 
-    function showToast(msg) {
+    function showToast(msg, duration = 2500) {
         const toast = document.createElement('div');
         toast.textContent = msg;
         Object.assign(toast.style, {
             position: 'fixed',
             top: '46px',
             right: '16px',
-            background: '#1e293b',
+            background: '#0f172a',
             color: '#38bdf8',
             border: '1px solid #0284c7',
-            padding: '6px 14px',
+            padding: '7px 14px',
             borderRadius: '6px',
             fontSize: '11px',
+            fontWeight: '600',
             fontFamily: 'system-ui, sans-serif',
             zIndex: '2147483647',
-            boxShadow: '0 4px 14px rgba(0,0,0,0.4)',
+            boxShadow: '0 6px 16px rgba(0,0,0,0.5)',
             pointerEvents: 'none'
         });
         document.documentElement.appendChild(toast);
-        setTimeout(() => toast.remove(), 3500);
+        setTimeout(() => toast.remove(), duration);
     }
 
     // =========================================================================
@@ -872,11 +890,24 @@
     });
 
     // =========================================================================
-    // 11. LIFECYCLE INITIALIZATION
+    // 11. LIFECYCLE INITIALIZATION & POST-UPGRADE CELEBRATION
     // =========================================================================
     function mountApp() {
         createTopToolbarUI();
         setTimeout(triggerAutoFill, 400);
+
+        // POST-UPGRADE DETECTION: Checks if the user just updated the script
+        const previousRecordedVersion = GM_getValue(STORAGE_INSTALLED_VER, null);
+        if (previousRecordedVersion && compareVersions(CURRENT_VERSION, previousRecordedVersion)) {
+            // New version installed: automatically unhide the bar and alert user
+            setViewMode('expanded');
+            setTimeout(() => {
+                showToast(`🎉 Upgraded successfully to AUTOFILL v${CURRENT_VERSION} #RT!`, 5000);
+            }, 600);
+            GM_setValue(STORAGE_INSTALLED_VER, CURRENT_VERSION);
+        } else if (!previousRecordedVersion) {
+            GM_setValue(STORAGE_INSTALLED_VER, CURRENT_VERSION);
+        }
 
         if (!observer && document.body) {
             let debounceTimer;
