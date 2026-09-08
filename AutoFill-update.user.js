@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         AUTOFILL v7.8 #RT
-// @namespace    https://tampermonkey.net/
-// @version      7.8
-// @description  AUTOFILL v7.8 #RT - Post-upgrade success announcement, "Up to date" status, and manual GitHub updater.
+// @name         AUTOFILL PRO #RT
+// @namespace    https://github.com/darort/blockname
+// @version      7.9
+// @description  AUTOFILL PRO #RT - Hardware locked (1 PC), unified ID, and in-place GitHub updater.
 // @match        *://*/*
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -13,24 +13,24 @@
 // @connect      githubusercontent.com
 // @connect      *
 // @run-at       document-idle
-// @updateURL    https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js
-// @downloadURL  https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js
+// @updateURL    https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.user.js
+// @downloadURL  https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.user.js
 // ==/UserScript==
 
 (function () {
     'use strict';
 
     // =========================================================================
-    // 0. CONFIGURATION & REPOSITORY LINKS
+    // 0. CONFIGURATION & VERSION TRACKER
     // =========================================================================
-    const CURRENT_VERSION = '7.8';
+    const CURRENT_VERSION = '7.9';
 
     // Live Cloudflare Worker
     const RAW_API_URL = 'https://autofill-keys.darort07.workers.dev';
     const LICENSE_API_URL = RAW_API_URL.replace(/\/+$/, '');
 
     // GitHub Raw Script URL
-    const GITHUB_RAW_SCRIPT_URL = 'https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.js';
+    const GITHUB_RAW_SCRIPT_URL = 'https://raw.githubusercontent.com/darort/blockname/main/AutoFill-update.user.js';
 
     // Storage Keys
     const STORAGE_PROFILES = 'af_profiles_db';
@@ -54,7 +54,7 @@
             const ctx = canvas.getContext('2d');
             ctx.textBaseline = 'top';
             ctx.font = "14px 'Arial'";
-            ctx.fillText("RT-AUTOFILL-v77", 2, 2);
+            ctx.fillText("RT-AUTOFILL-PRO", 2, 2);
             const rawHash = btoa(canvas.toDataURL() + screen.width + 'x' + screen.height + navigator.hardwareConcurrency);
             const cleanHash = rawHash.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase();
 
@@ -376,7 +376,7 @@
                     }
                 });
             } catch (err) {
-                console.error('[AUTOFILL v7.7 Error]', err);
+                console.error('[AUTOFILL Error]', err);
             }
         });
         return count;
@@ -402,7 +402,7 @@
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `autofill_v77_backup_${new Date().toISOString().slice(0, 10)}.json`;
+        a.download = `autofill_backup_${new Date().toISOString().slice(0, 10)}.json`;
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -624,7 +624,6 @@
             </div>
 
             <div style="display:flex; align-items:center; gap:8px;">
-                <!-- Update / Up-to-Date Slot -->
                 <div id="af-update-slot" style="display:flex; align-items:center;">
                     <span style="font-size:10px; color:#10b981; font-family:monospace; background:#10b98115; border:1px solid #10b98144; padding:2px 8px; border-radius:4px;" title="Running latest release">✓ UP TO DATE</span>
                 </div>
@@ -634,7 +633,6 @@
             </div>
         `;
 
-        // Pulse animation for upgrade button
         const styleSheet = document.createElement('style');
         styleSheet.textContent = `
             @keyframes afPulse {
@@ -681,7 +679,7 @@
         applySavedUIMode();
         updateUI();
 
-        // Check for updates & render either "Update to vX.X" or "✓ UP TO DATE"
+        // Check for updates & render either "Upgrade to vX.X" or "✓ UP TO DATE"
         checkGitHubForUpdates((hasUpdate, remoteVer) => {
             if (!updateSlotEl) return;
             if (hasUpdate) {
@@ -693,7 +691,10 @@
                 const btn = updateSlotEl.querySelector('#af-btn-upgrade-action');
                 if (btn) {
                     btn.onclick = () => {
-                        window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
+                        // User confirmation step before redirecting
+                        if (confirm(`A new release (AUTOFILL v${remoteVer} #RT) is available!\n\nWould you like to upgrade now?`)) {
+                            window.open(GITHUB_RAW_SCRIPT_URL, '_blank');
+                        }
                     };
                 }
 
@@ -890,16 +891,14 @@
     });
 
     // =========================================================================
-    // 11. LIFECYCLE INITIALIZATION & POST-UPGRADE CELEBRATION
+    // 11. LIFECYCLE INITIALIZATION & POST-UPGRADE DETECTION
     // =========================================================================
     function mountApp() {
         createTopToolbarUI();
         setTimeout(triggerAutoFill, 400);
 
-        // POST-UPGRADE DETECTION: Checks if the user just updated the script
         const previousRecordedVersion = GM_getValue(STORAGE_INSTALLED_VER, null);
         if (previousRecordedVersion && compareVersions(CURRENT_VERSION, previousRecordedVersion)) {
-            // New version installed: automatically unhide the bar and alert user
             setViewMode('expanded');
             setTimeout(() => {
                 showToast(`🎉 Upgraded successfully to AUTOFILL v${CURRENT_VERSION} #RT!`, 5000);
