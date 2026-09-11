@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         EXTENSION SUB-SYSTEM #RT
 // @namespace    https://github.com/darort/blockname
-// @version      1.9
-// @description  Perf pass: scoped @match, persistent TTL cache for remote JSON fetches, parallel module execution, indexed+debounced Block Name matching, one shared observer, idle-scheduled execution. Added Gender Switcher v7.0. Modules: Block Name v9.0, Visa & Penal v9.2, Nationality v7.0, Card Received v6.0, Passport v6.0, Payment Check v6.0, Save PDF v8.0, Date Count v5.0, Link Click v2.2, Cancel Tick v5.0, 2024 Check v2.1, Gender Switcher v7.0.
+// @version      2.0
+// @description  Perf pass: scoped @match, persistent TTL cache for remote JSON fetches, parallel module execution, indexed+debounced Block Name matching, one shared observer, idle-scheduled execution. Added Gender Switcher v7.0.
 // @match        *://kingwinagency.net/*
 // @match        *://*.kingwinagency.net/*
 // @grant        none
 // @run-at       document-end
+// @updateURL    https://raw.githubusercontent.com/darort/blockname/main/EXTENSION%20SUB-SYSTEM-update.user.js
+// @downloadURL  https://raw.githubusercontent.com/darort/blockname/main/EXTENSION%20SUB-SYSTEM-update.user.js
 // ==/UserScript==
 
 (function() {
@@ -57,6 +59,8 @@
     ];
 
     localStorage.setItem('rt_extension_registry', JSON.stringify(EXT_REGISTRY));
+    localStorage.setItem('rt_extension_registry', JSON.stringify(EXT_REGISTRY));
+    localStorage.setItem('rt_subsystem_version', '2.0'); // <--- ADD THIS LINE
 
     let activeModulesCache = {};
     function refreshActiveModulesCache() {
