@@ -1,7 +1,7 @@
 {
     "version": "6.0",
     "blockedNames": [
-        {"name": "642654867", "note": "ប់ទោសឃើញក្នុង Website​"},
+        {"name": "642654867", "note": "ជាប់ទោសឃើញក្នុង Website​"},
         {"name": "STAFF", "note": "Not Allow"},
         {"name": "SELF EMPLOYED", "note": "Not Allow"},
         {"name": "THAILAND", "note": "Not Allow"},
@@ -1298,6 +1298,8 @@
         {"name": "WANG JIANGTAO", "note": "(FAKE VISA)"},
         {"name": "R5528525", "note": "BPH-1163 (FAKE VISA)"},
         {"name": "MANKARA THODI MOHAMMED ALTHAF", "note": "BPH-1163 (FAKE VISA)"}, 
+        {"name": "EC0624214", "note": "QIU YUANZHONG - BAO (Edit VPASS ឆែក vpass មុនបញ្ចូល)"},
+        {"name": "QIU YUANZHONG", "note": "EC0624214 - BAO (Edit VPASS ឆែក vpass មុនបញ្ចូល"}, 
         {"name": "========================", "សង្ស័យ": "=========================="},
         {"name": "EP9923396", "note": "សង្ស័យក្លែងក្លាយ FU MAODONG https://t.me/c/3604999601/22"},
         {"name": "FU MAODONG", "note": "សង្ស័យក្លែងក្លាយ EP9923396 https://t.me/c/3604999601/22"},
