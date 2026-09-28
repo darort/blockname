@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "description": "Editable Line data for AUTOFILL VIP. Add or edit entries here.",
+  "lines": [
+    {
+      "name": "SE-DC1",
+      "parts": [218, 95]
+    },
+    {
+      "name": "SE-DC2",
+      "parts": [220, 95]
+    },
+    {
+      "name": "SE-DC3",
+      "parts": [220, 100]
+    },
+    {
+      "name": "SE-DC4",
+      "parts": [230, 100]
+    }
+  ]
+}
